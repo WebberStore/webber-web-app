@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
 import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 const Stock = () => {
-  // Dummy data
   const [data, setData] = useState([
     {
       id: 1,
@@ -37,6 +37,28 @@ const Stock = () => {
       buyingPrice: 2100,
       sellingPrice: 2100,
       status: 'Deactivate',
+    },
+    {
+      id: 4,
+      product: 'Women Denim',
+      productID: 'SN00005',
+      quantity: 4,
+      category: 'Women',
+      vendor: 'Kamal',
+      buyingPrice: 5400,
+      sellingPrice: 5400,
+      status: 'Deactivate',
+    },
+    {
+      id: 5,
+      product: 'Women Shirt',
+      productID: 'SN00024',
+      quantity: 11,
+      category: 'Women',
+      vendor: 'Kamal',
+      buyingPrice: 2400,
+      sellingPrice: 2400,
+      status: 'Active',
     },
     {
       id: 4,
@@ -97,6 +119,18 @@ const Stock = () => {
     setShowModal(false) // Close the modal
   }
 
+  const confirmUpdate = () => {
+    setShowConfirmation(false)
+    // Trigger update form after confirmation
+    setPendingAction('UpdateForm')
+  }
+
+  const confirmDelete = () => {
+    setShowConfirmation(false)
+    // Trigger delete after confirmation
+    handleDelete()
+  }
+
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.autoTable({
@@ -124,43 +158,162 @@ const Stock = () => {
     doc.save('stock_table.pdf')
   }
 
-  const addProductForm = () => {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg relative">
-          <h2 className="text-xl font-bold mb-6">Add New Product</h2>
-          {/* Image Upload Field */}
-          <div className="border-dashed border-2 border-gray-300 p-4 rounded-lg text-center mb-4">
-            <div className="mb-2">Drag image here</div>
-            <div className="text-blue-500 underline cursor-pointer">
-              Browse image
-            </div>
-          </div>
-          {/* Form fields */}
-          <input
-            type="text"
-            placeholder="Product Name"
-            className="border w-full mb-2 p-2 rounded-lg"
-          />
-          <input
-            type="number"
-            placeholder="Quantity"
-            className="border w-full mb-2 p-2 rounded-lg"
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            className="border w-full mb-2 p-2 rounded-lg"
-          />
-          <button className="bg-blue-500 text-white w-full py-2 px-4 rounded">
-            Add Product
+  const getRowColor = (quantity) => {
+    if (quantity < 5) {
+      return 'bg-danger text-white'
+    } else if (quantity >= 5 && quantity <= 10) {
+      return 'bg-warning text-dark'
+    }
+    return ''
+  }
+
+  const actionButtons = () => (
+    <div className="d-flex justify-content-around">
+      <button
+        className="btn btn-primary"
+        onClick={() => {
+          setPendingAction('Update')
+          setShowConfirmation(true)
+        }}
+      >
+        Update
+      </button>
+      <button
+        className="btn btn-danger"
+        onClick={() => {
+          setPendingAction('Delete')
+          setShowConfirmation(true)
+        }}
+      >
+        Delete
+      </button>
+    </div>
+  )
+
+  const confirmationPrompt = () => (
+    <div className="text-center mt-3">
+      {pendingAction === 'Delete' ? (
+        <>
+          <p className="text-danger">
+            Are you sure you want to delete this product?
+          </p>
+          <button className="btn btn-danger me-2" onClick={confirmDelete}>
+            Yes, Delete
           </button>
           <button
-            onClick={() => setShowAddProduct(false)}
-            className="text-gray-500 w-full mt-2"
+            className="btn btn-secondary"
+            onClick={() => setShowConfirmation(false)}
           >
             Cancel
           </button>
+        </>
+      ) : pendingAction === 'Update' ? (
+        <>
+          <p className="text-primary">
+            Are you sure you want to update this product?
+          </p>
+          <button className="btn btn-primary me-2" onClick={confirmUpdate}>
+            Yes, Update
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowConfirmation(false)}
+          >
+            Cancel
+          </button>
+        </>
+      ) : null}
+    </div>
+  )
+
+  const addProductForm = () => {
+    return (
+      <div className="modal show fade d-block" tabIndex="-1">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Add New Product</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setShowAddProduct(false)}
+              ></button>
+            </div>
+            <div className="modal-body">
+              {/* Image Upload */}
+              <div className="border-dashed border-2 border-gray-300 p-4 rounded-lg text-center mb-4">
+                <div className="mb-2">Drag image here</div>
+                <div className="text-primary text-decoration-underline cursor-pointer">
+                  Browse image
+                </div>
+              </div>
+              {/* Product Name */}
+              <div className="mb-3">
+                <label className="form-label">Product Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter product name"
+                />
+              </div>
+              {/* Product ID */}
+              <div className="mb-3">
+                <label className="form-label">Product ID</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Enter product ID"
+                />
+              </div>
+              {/* Category */}
+              <div className="mb-3">
+                <label className="form-label">Category</label>
+                <select className="form-select">
+                  <option>Select product category</option>
+                  {/* Add more options as needed */}
+                </select>
+              </div>
+              {/* Buying Price */}
+              <div className="mb-3">
+                <label className="form-label">Buying Price</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter buying price"
+                />
+              </div>
+              {/* Quantity */}
+              <div className="mb-3">
+                <label className="form-label">Quantity</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter product quantity"
+                />
+              </div>
+              {/* Selling Price */}
+              <div className="mb-3">
+                <label className="form-label">Selling Price</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Enter selling price"
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => setShowAddProduct(false)}
+              >
+                Discard
+              </button>
+              <button type="button" className="btn btn-primary">
+                Add Product
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -168,96 +321,125 @@ const Stock = () => {
 
   const updateProductForm = () => {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-lg relative">
-          <h2 className="text-xl font-bold mb-6">Update Product Details</h2>
-          {/* Form fields */}
-          <input
-            type="text"
-            placeholder="Product Name"
-            className="border w-full mb-2 p-2 rounded-lg"
-            value={selectedProduct?.product || ''}
-            onChange={(e) =>
-              setSelectedProduct({
-                ...selectedProduct,
-                product: e.target.value,
-              })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Product ID"
-            className="border w-full mb-2 p-2 rounded-lg"
-            value={selectedProduct?.productID || ''}
-            onChange={(e) =>
-              setSelectedProduct({
-                ...selectedProduct,
-                productID: e.target.value,
-              })
-            }
-          />
-          <input
-            type="text"
-            placeholder="Category"
-            className="border w-full mb-2 p-2 rounded-lg"
-            value={selectedProduct?.category || ''}
-            onChange={(e) =>
-              setSelectedProduct({
-                ...selectedProduct,
-                category: e.target.value,
-              })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Quantity"
-            className="border w-full mb-2 p-2 rounded-lg"
-            value={selectedProduct?.quantity || ''}
-            onChange={(e) =>
-              setSelectedProduct({
-                ...selectedProduct,
-                quantity: e.target.value,
-              })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Buying Price"
-            className="border w-full mb-2 p-2 rounded-lg"
-            value={selectedProduct?.buyingPrice || ''}
-            onChange={(e) =>
-              setSelectedProduct({
-                ...selectedProduct,
-                buyingPrice: e.target.value,
-              })
-            }
-          />
-          <input
-            type="number"
-            placeholder="Selling Price"
-            className="border w-full mb-2 p-2 rounded-lg"
-            value={selectedProduct?.sellingPrice || ''}
-            onChange={(e) =>
-              setSelectedProduct({
-                ...selectedProduct,
-                sellingPrice: e.target.value,
-              })
-            }
-          />
-          {/* Buttons */}
-          <div className="flex justify-between mt-6">
-            <button
-              onClick={() => setShowModal(false)}
-              className="bg-gray-300 text-gray-700 py-2 px-6 rounded-lg"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleUpdate}
-              className="bg-blue-500 text-white py-2 px-6 rounded-lg"
-            >
-              Update Product
-            </button>
+      <div className="modal show fade d-block" tabIndex="-1">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Update Product</h5>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => {
+                  setShowModal(false)
+                  setPendingAction(null) // Reset action to hide update form
+                }}
+              ></button>
+            </div>
+            <div className="modal-body">
+              <div className="mb-3">
+                <label className="form-label">Product Name</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={selectedProduct?.product || ''}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      product: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Product ID</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={selectedProduct?.productID || ''}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      productID: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Category</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  value={selectedProduct?.category || ''}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      category: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Quantity</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={selectedProduct?.quantity || ''}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      quantity: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Buying Price</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={selectedProduct?.buyingPrice || ''}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      buyingPrice: e.target.value,
+                    })
+                  }
+                />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Selling Price</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  value={selectedProduct?.sellingPrice || ''}
+                  onChange={(e) =>
+                    setSelectedProduct({
+                      ...selectedProduct,
+                      sellingPrice: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setShowModal(false)
+                  setPendingAction(null) // Reset action to hide update form
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleUpdate}
+              >
+                Update Product
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -265,292 +447,204 @@ const Stock = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="container" style={{ backgroundColor: '#f5f7fa' }}>
       {/* Summary Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-4 rounded-3xl shadow-md flex items-center">
-          <div className="bg-blue-100 p-3 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="blue"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              className="w-8 h-8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 11c2.485 0 4.5-2.015 4.5-4.5S14.485 2 12 2 7.5 4.015 7.5 6.5 9.515 11 12 11zM12 13.5c-2.62 0-7.5 1.315-7.5 3.75V19.5c0 .828.672 1.5 1.5 1.5h12c.828 0 1.5-.672 1.5-1.5v-2.25c0-2.435-4.88-3.75-7.5-3.75z"
-              />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <h3 className="text-gray-500 text-sm">Total Items</h3>
-            <p className="text-black text-2xl font-bold">125</p>
+      <div className="row mb-4">
+        <div className="col-md-3">
+          <div className="card shadow-sm">
+            <div className="card-body text-center">
+              <div
+                className="rounded-circle bg-light p-3 mx-auto mb-2"
+                style={{ width: '50px', height: '50px' }}
+              >
+                <i
+                  className="fas fa-user text-primary"
+                  style={{ fontSize: '24px' }}
+                ></i>
+              </div>
+              <h6 className="text-muted">Total Items</h6>
+              <p className="h3 font-weight-bold">125</p>
+            </div>
           </div>
         </div>
-        <div className="bg-white p-4 rounded-3xl shadow-md flex items-center">
-          <div className="bg-yellow-100 p-3 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="orange"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              className="w-8 h-8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 11c2.485 0 4.5-2.015 4.5-4.5S14.485 2 12 2 7.5 4.015 7.5 6.5 9.515 11 12 11zM12 13.5c-2.62 0-7.5 1.315-7.5 3.75V19.5c0 .828.672 1.5 1.5 1.5h12c.828 0 1.5-.672 1.5-1.5v-2.25c0-2.435-4.88-3.75-7.5-3.75z"
-              />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <h3 className="text-gray-500 text-sm">Profit</h3>
-            <p className="text-black text-2xl font-bold">Rs.100,000.00</p>
+        <div className="col-md-3">
+          <div className="card shadow-sm">
+            <div className="card-body text-center">
+              <div
+                className="rounded-circle bg-light p-3 mx-auto mb-2"
+                style={{ width: '50px', height: '50px' }}
+              >
+                <i
+                  className="fas fa-briefcase text-warning"
+                  style={{ fontSize: '24px' }}
+                ></i>
+              </div>
+              <h6 className="text-muted">Profit</h6>
+              <p className="h3 font-weight-bold">Rs.100,000.00</p>
+            </div>
           </div>
         </div>
-        <div className="bg-white p-4 rounded-3xl shadow-md flex items-center">
-          <div className="bg-red-100 p-3 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="red"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              className="w-8 h-8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 11c2.485 0 4.5-2.015 4.5-4.5S14.485 2 12 2 7.5 4.015 7.5 6.5 9.515 11 12 11zM12 13.5c-2.62 0-7.5 1.315-7.5 3.75V19.5c0 .828.672 1.5 1.5 1.5h12c.828 0 1.5-.672 1.5-1.5v-2.25c0-2.435-4.88-3.75-7.5-3.75z"
-              />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <h3 className="text-gray-500 text-sm">Low On Stock</h3>
-            <p className="text-black text-2xl font-bold">111</p>
+        <div className="col-md-3">
+          <div className="card shadow-sm">
+            <div className="card-body text-center">
+              <div
+                className="rounded-circle bg-light p-3 mx-auto mb-2"
+                style={{ width: '50px', height: '50px' }}
+              >
+                <i
+                  className="fas fa-chart-line text-danger"
+                  style={{ fontSize: '24px' }}
+                ></i>
+              </div>
+              <h6 className="text-muted">Low On Stock</h6>
+              <p className="h3 font-weight-bold">111</p>
+            </div>
           </div>
         </div>
-        <div className="bg-white p-4 rounded-3xl shadow-md flex items-center">
-          <div className="bg-teal-100 p-3 rounded-full">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="teal"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              className="w-8 h-8"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 11c2.485 0 4.5-2.015 4.5-4.5S14.485 2 12 2 7.5 4.015 7.5 6.5 9.515 11 12 11zM12 13.5c-2.62 0-7.5 1.315-7.5 3.75V19.5c0 .828.672 1.5 1.5 1.5h12c.828 0 1.5-.672 1.5-1.5v-2.25c0-2.435-4.88-3.75-7.5-3.75z"
-              />
-            </svg>
-          </div>
-          <div className="ml-4">
-            <h3 className="text-gray-500 text-sm">Categories</h3>
-            <p className="text-black text-2xl font-bold">24</p>
+        <div className="col-md-3">
+          <div className="card shadow-sm">
+            <div className="card-body text-center">
+              <div
+                className="rounded-circle bg-light p-3 mx-auto mb-2"
+                style={{ width: '50px', height: '50px' }}
+              >
+                <i
+                  className="fas fa-tools text-info"
+                  style={{ fontSize: '24px' }}
+                ></i>
+              </div>
+              <h6 className="text-muted">Categories</h6>
+              <p className="h3 font-weight-bold">24</p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Wrap the entire content in a white card */}
-      <div className="bg-white rounded-3xl shadow-md p-6">
-        {/* Search Input and Buttons */}
-        <div className="mb-4 flex justify-between items-center">
-          {/* Search Input */}
+      {/* Search Input and Buttons */}
+      <div className="row mb-3">
+        <div className="col-md-8">
           <input
             type="text"
-            className="border rounded-lg p-2 w-2/3"
+            className="form-control"
             placeholder="Search products..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <div className="flex space-x-2">
-            <button
-              onClick={() => setShowAddProduct(true)}
-              className="bg-green-500 text-white py-2 px-4 rounded"
-            >
-              Add Product
-            </button>
-            <button
-              onClick={downloadPDF}
-              className="bg-[#6362B5] text-white py-2 px-4 rounded"
-            >
-              Download PDF
-            </button>
-          </div>
         </div>
+        <div className="col-md-4 d-flex justify-content-end">
+          <button
+            onClick={() => setShowAddProduct(true)}
+            className="btn btn-success me-2"
+          >
+            Add Product
+          </button>
+          <button onClick={downloadPDF} className="btn btn-primary">
+            Download PDF
+          </button>
+        </div>
+      </div>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-lg shadow-md">
-            <thead>
-              <tr>
-                <th className="py-2 px-4 border-b">No</th>
-                <th className="py-2 px-4 border-b">Product</th>
-                <th className="py-2 px-4 border-b">Product ID</th>
-                <th className="py-2 px-4 border-b">Quantity</th>
-                <th className="py-2 px-4 border-b">Category</th>
-                <th className="py-2 px-4 border-b">Vendor</th>
-                <th className="py-2 px-4 border-b">Buying Price</th>
-                <th className="py-2 px-4 border-b">Selling Price</th>
-                <th className="py-2 px-4 border-b">Status</th>
-                <th className="py-2 px-4 border-b">Action</th>
+      {/* Data Table */}
+      <div className="table-responsive">
+        <table className="table table-bordered">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Product</th>
+              <th>Product ID</th>
+              <th>Quantity</th>
+              <th>Category</th>
+              <th>Vendor</th>
+              <th>Buying Price</th>
+              <th>Selling Price</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {currentRows.map((product, index) => (
+              <tr key={product.id} className={getRowColor(product.quantity)}>
+                <td>{index + 1}</td>
+                <td>{product.product}</td>
+                <td>{product.productID}</td>
+                <td>{product.quantity}</td>
+                <td>{product.category}</td>
+                <td>{product.vendor}</td>
+                <td>Rs.{product.buyingPrice}.00</td>
+                <td>Rs.{product.sellingPrice}.00</td>
+                <td>
+                  <span className="badge bg-secondary">{product.status}</span>
+                </td>
+                <td>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => {
+                      setSelectedProduct(product)
+                      setShowModal(true)
+                    }}
+                  >
+                    Action
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {currentRows.map((product, index) => (
-                <tr key={product.id}>
-                  <td className="py-2 px-4 border-b">{index + 1}</td>
-                  <td className="py-2 px-4 border-b">{product.product}</td>
-                  <td className="py-2 px-4 border-b">{product.productID}</td>
-                  <td className="py-2 px-4 border-b">{product.quantity}</td>
-                  <td className="py-2 px-4 border-b">{product.category}</td>
-                  <td className="py-2 px-4 border-b">{product.vendor}</td>
-                  <td className="py-2 px-4 border-b">
-                    Rs.{product.buyingPrice}.00
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    Rs.{product.sellingPrice}.00
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <button className="bg-gray-400 text-white py-1 px-3 rounded">
-                      {product.status}
-                    </button>
-                  </td>
-                  <td className="py-2 px-4 border-b">
-                    <button
-                      onClick={() => {
-                        setSelectedProduct(product)
-                        setShowModal(true)
-                      }}
-                      className="bg-[#6362B5] text-white py-1 px-3 rounded"
-                    >
-                      Action
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-        {/* Pagination */}
-        <div className="flex justify-between mt-4">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            className="bg-gray-200 p-2 rounded-lg"
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <span className="self-center">
-            Page {currentPage} of {Math.ceil(data.length / rowsPerPage)}
-          </span>
-          <button
-            onClick={() =>
-              setCurrentPage((prev) =>
-                Math.min(prev + 1, Math.ceil(data.length / rowsPerPage))
-              )
-            }
-            className="bg-gray-200 p-2 rounded-lg"
-            disabled={currentPage === Math.ceil(data.length / rowsPerPage)}
-          >
-            Next
-          </button>
-        </div>
+      {/* Pagination */}
+      <div className="d-flex justify-content-between mt-4">
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          className="btn btn-secondary"
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span className="align-self-center">
+          Page {currentPage} of {Math.ceil(data.length / rowsPerPage)}
+        </span>
+        <button
+          onClick={() =>
+            setCurrentPage((prev) =>
+              Math.min(prev + 1, Math.ceil(data.length / rowsPerPage))
+            )
+          }
+          className="btn btn-secondary"
+          disabled={currentPage === Math.ceil(data.length / rowsPerPage)}
+        >
+          Next
+        </button>
+      </div>
 
-        {/* Modal */}
-        {showModal && selectedProduct && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-            <div className="bg-white p-6 rounded-2xl shadow-lg w-96 relative">
-              <button
-                onClick={() => {
-                  setShowModal(false)
-                  setShowConfirmation(false) // Reset confirmation state
-                }}
-                className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  className="w-6 h-6"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-
-              <h2 className="text-xl font-bold mb-4">
-                Change Status for {selectedProduct.product}
-              </h2>
-
-              {!showConfirmation ? (
-                <div className="flex flex-col space-y-4">
-                  <button
-                    onClick={() => {
-                      setPendingAction('Update')
-                      setShowConfirmation(true) // Show confirmation
-                    }}
-                    className="bg-teal-400 text-white py-2 px-4 rounded w-full"
-                  >
-                    Update Product
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPendingAction('Delete')
-                      setShowConfirmation(true) // Show confirmation
-                    }}
-                    className="bg-red-500 text-white py-2 px-4 rounded w-full"
-                  >
-                    Delete Product
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-gray-700 mb-4">
-                    Are you sure you want to {pendingAction.toLowerCase()} this
-                    product?
-                  </p>
-                  <div className="flex space-x-4">
-                    {pendingAction === 'Delete' ? (
-                      <button
-                        onClick={handleDelete}
-                        className="bg-red-500 text-white py-2 px-4 rounded"
-                      >
-                        Yes, Delete
-                      </button>
-                    ) : (
-                      <button
-                        onClick={handleUpdate}
-                        className="bg-teal-400 text-white py-2 px-4 rounded"
-                      >
-                        Yes, Update
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setShowConfirmation(false)} // Go back to action selection
-                      className="bg-gray-500 text-white py-2 px-4 rounded"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              )}
+      {/* Action Modal */}
+      {showModal && selectedProduct && (
+        <div className="modal show fade d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">
+                  Actions for {selectedProduct.product}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                {showConfirmation ? confirmationPrompt() : actionButtons()}
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Add Product Popup */}
-        {showAddProduct && addProductForm()}
-      </div>
+      {/* Add Product Modal */}
+      {showAddProduct && addProductForm()}
+
+      {/* Update Form Modal */}
+      {pendingAction === 'UpdateForm' && updateProductForm()}
     </div>
   )
 }

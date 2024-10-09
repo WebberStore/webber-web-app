@@ -50,64 +50,81 @@ export default function Login() {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 h-screen w-full">
-      <div className="hidden sm:block">
-        <img className="w-full h-full object-cover" src={loginImg} alt="" />
-      </div>
+    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center rounded-lg">
+      <div className="row w-100">
+        {/* Left side with image */}
+        <div className="col-md-6 d-none d-md-block p-0">
+          <img src={loginImg} alt="Login" className="img-fluid h-100 w-100" />
+        </div>
 
-      <div className="bg-gray-800 flex flex-col justify-center">
-        <form
-          className="max-w-[400px] w-full mx-auto rounded-lg bg-gray-900 p-8 px-8"
-          onSubmit={handleSubmit}
-        >
-          <p
-            className={
-              errMsg
-                ? 'bg-pink-700 text-red-100  p-0.5 mb-2 text-xl'
-                : 'absolute -left-full'
-            }
+        {/* Right side with login form */}
+        <div className="col-md-6 d-flex align-items-center justify-content-center rounded-lg">
+          <form
+            className="bg-dark p-5 rounded-lg"
+            onSubmit={handleSubmit}
+            style={{ maxWidth: '400px', width: '100%' }}
           >
-            {errMsg}
-          </p>
-          <h2 className="text-4xl dark:text-white font-bold text-center">
-            SIGN IN
-          </h2>
-          <h3 className="text-2xl dark:text-white  text-center mt-2 mb-4">
-            Welcome To OrbitArcX
-          </h3>
-          <div className="flex flex-col text-gray-400 py-2">
-            <label>Username</label>
-            <input
-              className="rounded-lg bg-gray-700 mt-2 p-2 focus:border-blue-500 focus:bg-gray-800 focus:outline-none"
-              type="text"
-              id="username"
-              autoComplete="off"
-              onChange={(e) => setUser(e.target.value)}
-              value={user}
-              required
-            />
-          </div>
-          <div className="flex flex-col text-gray-400 py-2">
-            <label>Password</label>
-            <input
-              className="p-2 rounded-lg bg-gray-700 mt-2 focus:border-blue-500 focus:bg-gray-800 focus:outline-none"
-              type="password"
-              id="password"
-              onChange={(e) => setPwd(e.target.value)}
-              value={pwd}
-              required
-            />
-          </div>
-          <div className="flex justify-between text-gray-400 py-2">
-            <p className="flex items-center">
-              <input className="mr-2" type="checkbox" /> Remember Me
-            </p>
-            <p>Forgot Password</p>
-          </div>
-          <button className="w-full my-5 py-2 bg-green-500 shadow-lg shadow-teal-500/50 hover:shadow-teal-500/40 text-white font-semibold rounded-lg">
-            SIGN IN
-          </button>
-        </form>
+            {errMsg && (
+              <p className="alert alert-danger text-center">{errMsg}</p>
+            )}
+            <h2 className="text-center text-white mb-4">SIGN IN</h2>
+            <h3 className="text-center text-white mb-4">
+              Welcome To OrbitArcX
+            </h3>
+
+            {/* Username Input */}
+            <div className="form-group mb-3">
+              <label className="text-white">Username</label>
+              <input
+                type="text"
+                className="form-control bg-secondary text-white"
+                id="username"
+                autoComplete="off"
+                onChange={(e) => setUser(e.target.value)}
+                value={user}
+                required
+              />
+            </div>
+
+            {/* Password Input */}
+            <div className="form-group mb-3">
+              <label className="text-white">Password</label>
+              <input
+                type="password"
+                className="form-control bg-secondary text-white"
+                id="password"
+                onChange={(e) => setPwd(e.target.value)}
+                value={pwd}
+                required
+              />
+            </div>
+
+            {/* Remember Me and Forgot Password */}
+            <div className="d-flex justify-content-between mb-3">
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="rememberMe"
+                />
+                <label
+                  className="form-check-label text-white"
+                  htmlFor="rememberMe"
+                >
+                  Remember Me
+                </label>
+              </div>
+              <a href="#" className="text-white">
+                Forgot Password?
+              </a>
+            </div>
+
+            {/* Sign In Button */}
+            <button type="submit" className="btn btn-success w-100 py-2">
+              SIGN IN
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   )
