@@ -14,14 +14,15 @@ import AllSites from '../components/Dashboard/AllSites'
 import ViewOrder from '../components/Dashboard/ViewOrder'
 import Users from '../components/Dashboard/Users'
 
-import AccountsActivate from '../components/CSR/AccountsActivate'
+import Stock from '../components/Admin/Stock'
 
 export default function adminRoutes() {
   return (
     <Routes>
       {/* <Route element={<RequireAuth allowedRole={'admin'} />}> */}
-      <Route path="/" element={<Layout />}>
+      <Route path="/admin" element={<Layout />}>
         <Route index element={<Dashboard />} />
+        <Route path="stock" element={<Stock />} />
         <Route path="siteManagerProfileM" element={<SiteManagerProfileM />} />
         <Route path="addNewUser" element={<AddNewUser />} />
         <Route path="AllProducts" element={<AllProducts />} />
@@ -34,8 +35,6 @@ export default function adminRoutes() {
         <Route path="viewOrder" element={<ViewOrder />} />
         <Route path="addNewUser" element={<AddNewUser />} />
         <Route path="users" element={<Users />} />
-
-        <Route path="accountsActivate" element={<AccountsActivate />} />
       </Route>
       {/* </Route> */}
     </Routes>

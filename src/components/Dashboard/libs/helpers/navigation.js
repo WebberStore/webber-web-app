@@ -25,7 +25,7 @@ export const DASHBOARD_SIDEBAR_LINKS = [
   {
     key: 'dashboard',
     label: 'Products',
-    path: '/siteManagers',
+    path: '/stock',
     icon: <HiOutlineViewGrid />,
   },
   {
