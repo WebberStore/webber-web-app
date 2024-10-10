@@ -1,7 +1,8 @@
 import { Routes, Route } from 'react-router-dom'
 
 import AccountsActivate from '../components/CSR/AccountsActivate'
-import Layout from '../pages/Layout'
+import Order from '../components/CSR/Order'
+import Layout from '../pages/LayoutCSR'
 
 const csrRoutes = () => {
   return (
@@ -9,8 +10,9 @@ const csrRoutes = () => {
       {/* <Navbar name={'Sunil Perera'} /> */}
 
       <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route path="/accountsActivate" element={<AccountsActivate />} />
+        <Route path="/csr" element={<Layout />}>
+          <Route path="/csr/accountsActivate" element={<AccountsActivate />} />
+          <Route path="/csr/order" element={<Order />} />
         </Route>
       </Routes>
     </div>

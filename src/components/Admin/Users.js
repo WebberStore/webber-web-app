@@ -1,43 +1,31 @@
 import React, { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
+import axios from 'axios'
 
 export default function Users() {
   const [users, setUsers] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newUser, setNewUser] = useState({
-    userName: '',
-    firstName: '',
-    lastName: '',
+    name: '',
     email: '',
-    contactNo: '',
-    city: '',
-    role: 'Vendor',
     password: '',
+    role: 'Vendor',
   })
+  const [confirmDelete, setConfirmDelete] = useState(null)
 
-  // Simulating fetching users from a dummy API
+  // Fetch all vendors from the API
   useEffect(() => {
     getUsers()
   }, [])
 
-  const getUsers = () => {
-    // Simulate an API call
-    setTimeout(() => {
-      const dummyUsers = [
-        {
-          id: 1,
-          userName: 'JohnDoe',
-          firstName: 'John',
-          lastName: 'Doe',
-          email: 'john.doe@example.com',
-          contactNo: '1234567890',
-          role: 'Vendor',
-          city: 'Colombo',
-          password: 'password123',
-        },
-      ]
-      setUsers(dummyUsers)
-    }, 1000)
+  const getUsers = async () => {
+    try {
+      const response = await axios.get('http://localhost:5034/api/user')
+      const vendors = response.data.filter((user) => user.role === 'Vendor')
+      setUsers(vendors)
+    } catch (error) {
+      console.error('Error fetching users:', error)
+    }
   }
 
   const handleChange = (e) => {
@@ -45,22 +33,40 @@ export default function Users() {
     setNewUser((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     if (window.confirm('Are you sure you want to add this vendor?')) {
-      setUsers((prevUsers) => [
-        ...prevUsers,
-        { ...newUser, id: prevUsers.length + 1 },
-      ])
-      setIsModalOpen(false)
-      alert('Vendor added successfully!')
+      const payload = {
+        Email: newUser.email,
+        Name: newUser.name,
+        Password: newUser.password,
+        Role: 'Vendor',
+      }
+      try {
+        await axios.post('http://localhost:5034/api/user', payload)
+        setIsModalOpen(false)
+        alert('Vendor added successfully!')
+        getUsers() // Refresh the users after adding a new vendor
+      } catch (error) {
+        console.error('Error creating vendor:', error)
+      }
     }
   }
 
-  const deleteUser = (id) => {
+  const confirmDeleteUser = (id) => {
+    setConfirmDelete(id)
+  }
+
+  const deleteUser = async () => {
     if (window.confirm('Are you sure you want to delete this vendor?')) {
-      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== id))
-      alert('Vendor deleted successfully!')
+      try {
+        await axios.delete(`http://localhost:5034/api/user/${confirmDelete}`)
+        setConfirmDelete(null)
+        alert('Vendor deleted successfully!')
+        getUsers() // Refresh the users after deletion
+      } catch (error) {
+        console.error('Error deleting vendor:', error)
+      }
     }
   }
 
@@ -81,38 +87,12 @@ export default function Users() {
           <div className="modal-body">
             <form onSubmit={handleSubmit}>
               <div className="form-group">
-                <label>First Name</label>
+                <label>Name</label>
                 <input
                   type="text"
-                  name="firstName"
-                  placeholder="First Name"
-                  value={newUser.firstName}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Last Name</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  placeholder="Last Name"
-                  value={newUser.lastName}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>User Name</label>
-                <input
-                  type="text"
-                  name="userName"
-                  placeholder="User Name"
-                  value={newUser.userName}
+                  name="name"
+                  placeholder="Vendor Name"
+                  value={newUser.name}
                   onChange={handleChange}
                   className="form-control"
                   required
@@ -129,43 +109,6 @@ export default function Users() {
                   onChange={handleChange}
                   className="form-control"
                   required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Contact No</label>
-                <input
-                  type="text"
-                  name="contactNo"
-                  placeholder="Contact Number"
-                  value={newUser.contactNo}
-                  onChange={handleChange}
-                  className="form-control"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Role</label>
-                <select
-                  name="role"
-                  value={newUser.role}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                >
-                  <option value="Vendor">Vendor</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>City</label>
-                <input
-                  type="text"
-                  name="city"
-                  placeholder="City"
-                  value={newUser.city}
-                  onChange={handleChange}
-                  className="form-control"
                 />
               </div>
 
@@ -228,33 +171,23 @@ export default function Users() {
       <table className="table table-bordered">
         <thead>
           <tr>
-            <th>Vendor ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
+            <th>No</th>
             <th>Email</th>
-            <th>Contact No</th>
+            <th>Name</th>
             <th>Role</th>
-            <th>City</th>
-            <th>UserName</th>
-            <th>Password</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
+          {users.map((user, index) => (
             <tr key={user.id}>
-              <td>{user.id}</td>
-              <td>{user.firstName}</td>
-              <td>{user.lastName}</td>
+              <td>{index}</td> {/* Custom numbering starting from 0 */}
               <td>{user.email}</td>
-              <td>{user.contactNo}</td>
+              <td>{user.name}</td>
               <td>{user.role}</td>
-              <td>{user.city}</td>
-              <td>{user.userName}</td>
-              <td>{user.password}</td>
               <td>
                 <button
-                  onClick={() => deleteUser(user.id)}
+                  onClick={() => confirmDeleteUser(user.id)}
                   className="btn btn-danger"
                 >
                   Delete
@@ -264,6 +197,38 @@ export default function Users() {
           ))}
         </tbody>
       </table>
+
+      {/* Confirmation Modal for Deleting */}
+      {confirmDelete && (
+        <div className="modal show d-block" tabIndex="-1" role="dialog">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Confirm Delete</h5>
+              </div>
+              <div className="modal-body">
+                <p>Are you sure you want to delete this vendor?</p>
+                <div className="d-flex justify-content-end mt-3">
+                  <button
+                    type="button"
+                    className="btn btn-danger me-2"
+                    onClick={deleteUser}
+                  >
+                    Yes, Delete
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setConfirmDelete(null)}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
