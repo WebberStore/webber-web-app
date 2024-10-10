@@ -1,180 +1,221 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import { jsPDF } from 'jspdf'
 import 'jspdf-autotable'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
 const Stock = () => {
-  const [data, setData] = useState([
-    {
-      id: 1,
-      product: 'Men T-shirt Black',
-      productID: 'SN00012',
-      quantity: 15,
-      category: 'Mens',
-      vendor: 'Kamal',
-      buyingPrice: 1540,
-      sellingPrice: 1540,
-      status: 'Active',
-    },
-    {
-      id: 2,
-      product: 'Men T-shirt Blue',
-      productID: 'SN00002',
-      quantity: 10,
-      category: 'Mens',
-      vendor: 'Silva',
-      buyingPrice: 1540,
-      sellingPrice: 1540,
-      status: 'Deactivate',
-    },
-    {
-      id: 3,
-      product: 'Cap Red',
-      productID: 'SN00025',
-      quantity: 5,
-      category: 'Accessories',
-      vendor: 'Shani',
-      buyingPrice: 2100,
-      sellingPrice: 2100,
-      status: 'Deactivate',
-    },
-    {
-      id: 4,
-      product: 'Women Denim',
-      productID: 'SN00005',
-      quantity: 4,
-      category: 'Women',
-      vendor: 'Kamal',
-      buyingPrice: 5400,
-      sellingPrice: 5400,
-      status: 'Deactivate',
-    },
-    {
-      id: 5,
-      product: 'Women Shirt',
-      productID: 'SN00024',
-      quantity: 11,
-      category: 'Women',
-      vendor: 'Kamal',
-      buyingPrice: 2400,
-      sellingPrice: 2400,
-      status: 'Active',
-    },
-    {
-      id: 4,
-      product: 'Women Denim',
-      productID: 'SN00005',
-      quantity: 4,
-      category: 'Women',
-      vendor: 'Kamal',
-      buyingPrice: 5400,
-      sellingPrice: 5400,
-      status: 'Deactivate',
-    },
-    {
-      id: 5,
-      product: 'Women Shirt',
-      productID: 'SN00024',
-      quantity: 11,
-      category: 'Women',
-      vendor: 'Kamal',
-      buyingPrice: 2400,
-      sellingPrice: 2400,
-      status: 'Active',
-    },
-  ])
-
+  const [data, setData] = useState([])
+  const [categories, setCategories] = useState([])
+  const [lowStockCount, setLowStockCount] = useState(0)
+  const [totalStockValue, setTotalStockValue] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage] = useState(5)
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false) // For action modal (Update/Delete)
+  const [showUpdateModal, setShowUpdateModal] = useState(false) // For update form modal
   const [showConfirmation, setShowConfirmation] = useState(false)
-  const [showAddProduct, setShowAddProduct] = useState(false) // For Add Product form
-  const [pendingAction, setPendingAction] = useState(null) // Store pending action
+  const [showAddProduct, setShowAddProduct] = useState(false)
+  const [pendingAction, setPendingAction] = useState(null) // Store action type (Update/Delete)
   const [searchTerm, setSearchTerm] = useState('')
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    description: '',
+    price: '',
+    stock: '',
+    categoryId: '',
+    vendorId: '66fabea22165a016474e7a6e', // Hardcoded vendor ID
+  })
+  const [imageFile, setImageFile] = useState(null) // For storing the image file
+
+  const API_URL = process.env.REACT_APP_API_URL
+  const vendorId = '66fabea22165a016474e7a6e'
+
+  // Fetch products and categories from API on component mount
+  useEffect(() => {
+    getProducts()
+    getCategories()
+  }, [])
+
+  const getProducts = async () => {
+    try {
+      const response = await axios.get(
+        `${API_URL}/api/products/vendor/${vendorId}`
+      )
+      setData(response.data)
+      calculateLowStockCount(response.data)
+      calculateTotalStockValue(response.data)
+    } catch (error) {
+      console.error('Error fetching products:', error)
+    }
+  }
+
+  const getCategories = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/products/category`)
+      setCategories(response.data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  const calculateLowStockCount = (products) => {
+    const count = products.filter((product) => product.stock < 10).length
+    setLowStockCount(count)
+  }
+
+  const calculateTotalStockValue = (products) => {
+    const totalValue = products.reduce(
+      (acc, product) => acc + product.stock * product.price,
+      0
+    )
+    setTotalStockValue(totalValue)
+  }
+
+  // Handle form input changes for new and update forms
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setNewProduct((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Handle form input changes for updating products
+  const handleUpdateInputChange = (e) => {
+    const { name, value } = e.target
+    setSelectedProduct((prev) => ({ ...prev, [name]: value }))
+  }
+
+  // Handle image file selection
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]) // Store the selected file in state
+  }
+
+  // Create a new product
+  const createProduct = async (e) => {
+    e.preventDefault()
+
+    const formData = new FormData()
+    formData.append('name', newProduct.name)
+    formData.append('description', newProduct.description)
+    formData.append('price', newProduct.price)
+    formData.append('stock', newProduct.stock)
+    formData.append('categoryId', newProduct.categoryId)
+    formData.append('vendorId', newProduct.vendorId)
+    formData.append('imageFile', imageFile) // Append the selected image file
+
+    try {
+      await axios.post(`${API_URL}/api/products`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+      getProducts() // Refresh product list after creation
+      setShowAddProduct(false)
+      alert('Product added successfully!')
+    } catch (error) {
+      console.error('Error creating product:', error)
+    }
+  }
+
+  // Update a product (with or without updating the image)
+  const handleUpdate = async (e) => {
+    e.preventDefault()
+
+    const formData = new FormData()
+    formData.append('name', selectedProduct.name)
+    formData.append('description', selectedProduct.description)
+    formData.append('price', selectedProduct.price)
+    formData.append('stock', selectedProduct.stock)
+    formData.append('categoryId', selectedProduct.category.id)
+    formData.append('vendorId', selectedProduct.vendor.id)
+
+    // If a new image is selected, append it to the form data
+    if (imageFile) {
+      formData.append('imageFile', imageFile)
+    }
+
+    try {
+      await axios.put(
+        `${API_URL}/api/products/${selectedProduct.id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+      getProducts() // Refresh product list after update
+      setShowUpdateModal(false) // Close the update modal
+      setShowModal(false) // Close the action modal
+      alert('Product updated successfully!')
+    } catch (error) {
+      console.error('Error updating product:', error)
+    }
+  }
+
+  // Delete a product
+  const handleDelete = async () => {
+    try {
+      await axios.delete(`${API_URL}/api/products/${selectedProduct.id}`)
+      getProducts() // Refresh product list after deletion
+      setShowModal(false)
+      setShowConfirmation(false)
+    } catch (error) {
+      console.error('Error deleting product:', error)
+    }
+  }
+
+  // Open action modal and set selected product
+  const handleActionClick = (product) => {
+    setSelectedProduct(product)
+    setShowModal(true) // Show action modal
+  }
+
+  // Open update modal after selecting update action
+  const handleUpdateAction = () => {
+    setShowModal(false) // Close action modal
+    setShowUpdateModal(true) // Open update form modal
+  }
 
   // Pagination calculation
   const indexOfLastRow = currentPage * rowsPerPage
   const indexOfFirstRow = indexOfLastRow - rowsPerPage
   const currentRows = data
-    .filter((row) =>
-      row.product.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    .filter((row) => row.name.toLowerCase().includes(searchTerm.toLowerCase()))
     .slice(indexOfFirstRow, indexOfLastRow)
-
-  const handleDelete = () => {
-    setData((prevData) =>
-      prevData.filter((product) => product.id !== selectedProduct.id)
-    )
-    setShowModal(false)
-    setShowConfirmation(false) // Close confirmation after action
-  }
-
-  const handleUpdate = () => {
-    setData((prevData) =>
-      prevData.map((product) =>
-        product.id === selectedProduct.id ? selectedProduct : product
-      )
-    )
-    setShowModal(false) // Close the modal
-  }
-
-  const confirmUpdate = () => {
-    setShowConfirmation(false)
-    // Trigger update form after confirmation
-    setPendingAction('UpdateForm')
-  }
-
-  const confirmDelete = () => {
-    setShowConfirmation(false)
-    // Trigger delete after confirmation
-    handleDelete()
-  }
 
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.autoTable({
       head: [
-        [
-          'Product',
-          'Product ID',
-          'Quantity',
-          'Category',
-          'Vendor',
-          'Buying Price',
-          'Selling Price',
-        ],
+        ['Product Name', 'Stock', 'Description', 'Price', 'Category', 'Vendor'],
       ],
       body: data.map((product) => [
-        product.product,
-        product.productID,
-        product.quantity,
-        product.category,
-        product.vendor,
-        `Rs.${product.buyingPrice.toFixed(2)}`,
-        `Rs.${product.sellingPrice.toFixed(2)}`,
+        product.name,
+        product.stock,
+        product.description,
+        `Rs.${product.price.toFixed(2)}`,
+        product.category.name,
+        product.vendor.name,
       ]),
     })
     doc.save('stock_table.pdf')
   }
 
-  const getRowColor = (quantity) => {
-    if (quantity < 5) {
-      return 'bg-danger text-white'
-    } else if (quantity >= 5 && quantity <= 10) {
-      return 'bg-warning text-dark'
+  const getRowColor = (stock) => {
+    if (stock < 5) {
+      return 'bg-danger text-white' // Red for stock < 5
+    } else if (stock >= 5 && stock < 10) {
+      return 'bg-warning text-dark' // Yellow for stock between 5 and 10
+    } else {
+      return '' // No specific class for stock >= 10 (default color)
     }
-    return ''
   }
 
   const actionButtons = () => (
     <div className="d-flex justify-content-around">
       <button
         className="btn btn-primary"
-        onClick={() => {
-          setPendingAction('Update')
-          setShowConfirmation(true)
-        }}
+        onClick={handleUpdateAction} // Open update modal
       >
         Update
       </button>
@@ -197,23 +238,8 @@ const Stock = () => {
           <p className="text-danger">
             Are you sure you want to delete this product?
           </p>
-          <button className="btn btn-danger me-2" onClick={confirmDelete}>
+          <button className="btn btn-danger me-2" onClick={handleDelete}>
             Yes, Delete
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setShowConfirmation(false)}
-          >
-            Cancel
-          </button>
-        </>
-      ) : pendingAction === 'Update' ? (
-        <>
-          <p className="text-primary">
-            Are you sure you want to update this product?
-          </p>
-          <button className="btn btn-primary me-2" onClick={confirmUpdate}>
-            Yes, Update
           </button>
           <button
             className="btn btn-secondary"
@@ -226,295 +252,39 @@ const Stock = () => {
     </div>
   )
 
-  const addProductForm = () => {
-    return (
-      <div className="modal show fade d-block" tabIndex="-1">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Add New Product</h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => setShowAddProduct(false)}
-              ></button>
-            </div>
-            <div className="modal-body">
-              {/* Image Upload */}
-              <div className="border-dashed border-2 border-gray-300 p-4 rounded-lg text-center mb-4">
-                <div className="mb-2">Drag image here</div>
-                <div className="text-primary text-decoration-underline cursor-pointer">
-                  Browse image
-                </div>
-              </div>
-              {/* Product Name */}
-              <div className="mb-3">
-                <label className="form-label">Product Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter product name"
-                />
-              </div>
-              {/* Product ID */}
-              <div className="mb-3">
-                <label className="form-label">Product ID</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Enter product ID"
-                />
-              </div>
-              {/* Category */}
-              <div className="mb-3">
-                <label className="form-label">Category</label>
-                <select className="form-select">
-                  <option>Select product category</option>
-                  {/* Add more options as needed */}
-                </select>
-              </div>
-              {/* Buying Price */}
-              <div className="mb-3">
-                <label className="form-label">Buying Price</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Enter buying price"
-                />
-              </div>
-              {/* Quantity */}
-              <div className="mb-3">
-                <label className="form-label">Quantity</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Enter product quantity"
-                />
-              </div>
-              {/* Selling Price */}
-              <div className="mb-3">
-                <label className="form-label">Selling Price</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Enter selling price"
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-outline-secondary"
-                onClick={() => setShowAddProduct(false)}
-              >
-                Discard
-              </button>
-              <button type="button" className="btn btn-primary">
-                Add Product
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const updateProductForm = () => {
-    return (
-      <div className="modal show fade d-block" tabIndex="-1">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Update Product</h5>
-              <button
-                type="button"
-                className="btn-close"
-                onClick={() => {
-                  setShowModal(false)
-                  setPendingAction(null) // Reset action to hide update form
-                }}
-              ></button>
-            </div>
-            <div className="modal-body">
-              <div className="mb-3">
-                <label className="form-label">Product Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={selectedProduct?.product || ''}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      product: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Product ID</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={selectedProduct?.productID || ''}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      productID: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Category</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={selectedProduct?.category || ''}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      category: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Quantity</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={selectedProduct?.quantity || ''}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      quantity: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Buying Price</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={selectedProduct?.buyingPrice || ''}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      buyingPrice: e.target.value,
-                    })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Selling Price</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={selectedProduct?.sellingPrice || ''}
-                  onChange={(e) =>
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      sellingPrice: e.target.value,
-                    })
-                  }
-                />
-              </div>
-            </div>
-            <div className="modal-footer">
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() => {
-                  setShowModal(false)
-                  setPendingAction(null) // Reset action to hide update form
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleUpdate}
-              >
-                Update Product
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="container" style={{ backgroundColor: '#f5f7fa' }}>
+    <div className="container" style={{ backgroundColor: '#fff' }}>
       {/* Summary Cards */}
       <div className="row mb-4">
         <div className="col-md-3">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div
-                className="rounded-circle bg-light p-3 mx-auto mb-2"
-                style={{ width: '50px', height: '50px' }}
-              >
-                <i
-                  className="fas fa-user text-primary"
-                  style={{ fontSize: '24px' }}
-                ></i>
-              </div>
-              <h6 className="text-muted">Total Items</h6>
-              <p className="h3 font-weight-bold">125</p>
+          <div className="card text-center">
+            <div className="card-body">
+              <h5 className="card-title">Total Items</h5>
+              <p className="card-text">{data.length}</p>
             </div>
           </div>
         </div>
         <div className="col-md-3">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div
-                className="rounded-circle bg-light p-3 mx-auto mb-2"
-                style={{ width: '50px', height: '50px' }}
-              >
-                <i
-                  className="fas fa-briefcase text-warning"
-                  style={{ fontSize: '24px' }}
-                ></i>
-              </div>
-              <h6 className="text-muted">Profit</h6>
-              <p className="h3 font-weight-bold">Rs.100,000.00</p>
+          <div className="card text-center">
+            <div className="card-body">
+              <h5 className="card-title">Total Categories</h5>
+              <p className="card-text">{categories.length}</p>
             </div>
           </div>
         </div>
         <div className="col-md-3">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div
-                className="rounded-circle bg-light p-3 mx-auto mb-2"
-                style={{ width: '50px', height: '50px' }}
-              >
-                <i
-                  className="fas fa-chart-line text-danger"
-                  style={{ fontSize: '24px' }}
-                ></i>
-              </div>
-              <h6 className="text-muted">Low On Stock</h6>
-              <p className="h3 font-weight-bold">111</p>
+          <div className="card text-center">
+            <div className="card-body">
+              <h5 className="card-title">Low On Stock</h5>
+              <p className="card-text">{lowStockCount}</p>
             </div>
           </div>
         </div>
         <div className="col-md-3">
-          <div className="card shadow-sm">
-            <div className="card-body text-center">
-              <div
-                className="rounded-circle bg-light p-3 mx-auto mb-2"
-                style={{ width: '50px', height: '50px' }}
-              >
-                <i
-                  className="fas fa-tools text-info"
-                  style={{ fontSize: '24px' }}
-                ></i>
-              </div>
-              <h6 className="text-muted">Categories</h6>
-              <p className="h3 font-weight-bold">24</p>
+          <div className="card text-center">
+            <div className="card-body">
+              <h5 className="card-title">Total Stock Value</h5>
+              <p className="card-text">Rs.{totalStockValue.toFixed(2)}</p>
             </div>
           </div>
         </div>
@@ -535,6 +305,7 @@ const Stock = () => {
           <button
             onClick={() => setShowAddProduct(true)}
             className="btn btn-success me-2"
+            style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
           >
             Add Product
           </button>
@@ -550,37 +321,49 @@ const Stock = () => {
           <thead>
             <tr>
               <th>No</th>
-              <th>Product</th>
-              <th>Product ID</th>
-              <th>Quantity</th>
-              <th>Category</th>
-              <th>Vendor</th>
-              <th>Buying Price</th>
-              <th>Selling Price</th>
+              <th>Image</th>
+              <th>Product Name</th>
+              <th>Stock</th>
+              <th>Description</th>
+              <th>Price</th>
+              <th>Category Name</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
             {currentRows.map((product, index) => (
-              <tr key={product.id} className={getRowColor(product.quantity)}>
-                <td>{index + 1}</td>
-                <td>{product.product}</td>
-                <td>{product.productID}</td>
-                <td>{product.quantity}</td>
-                <td>{product.category}</td>
-                <td>{product.vendor}</td>
-                <td>Rs.{product.buyingPrice}.00</td>
-                <td>Rs.{product.sellingPrice}.00</td>
+              <tr key={product.id} className={getRowColor(product.stock)}>
+                <td>{index + 1 + (currentPage - 1) * rowsPerPage}</td>
                 <td>
-                  <span className="badge bg-secondary">{product.status}</span>
+                  <img
+                    src={product.imageUrl}
+                    alt={product.name}
+                    className="rounded-circle"
+                    style={{ width: '50px', height: '50px' }}
+                  />
+                </td>
+                <td>{product.name}</td>
+                <td>{product.stock}</td>
+                <td>{product.description}</td>
+                <td>Rs.{product.price}.00</td>
+                <td>{product.category.name}</td>
+                <td>
+                  <span
+                    className={`badge ${
+                      product.category.status ? 'bg-success' : 'bg-secondary'
+                    }`}
+                  >
+                    {product.category.status ? 'Active' : 'Deactive'}
+                  </span>
                 </td>
                 <td>
                   <button
                     className="btn btn-primary"
-                    onClick={() => {
-                      setSelectedProduct(product)
-                      setShowModal(true)
+                    onClick={() => handleActionClick(product)} // Open action modal
+                    style={{
+                      backgroundColor: '#6362b5',
+                      borderColor: '#6362b5',
                     }}
                   >
                     Action
@@ -624,7 +407,7 @@ const Stock = () => {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">
-                  Actions for {selectedProduct.product}
+                  Actions for {selectedProduct.name}
                 </h5>
                 <button
                   type="button"
@@ -641,10 +424,227 @@ const Stock = () => {
       )}
 
       {/* Add Product Modal */}
-      {showAddProduct && addProductForm()}
+      {showAddProduct && (
+        <div className="modal show fade d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Add New Product</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowAddProduct(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={createProduct}>
+                  <div className="mb-3">
+                    <label className="form-label">Product Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      placeholder="Enter product name"
+                      value={newProduct.name}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Description</label>
+                    <textarea
+                      className="form-control"
+                      name="description"
+                      placeholder="Enter product description"
+                      value={newProduct.description}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Price</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="price"
+                      placeholder="Enter product price"
+                      value={newProduct.price}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Stock</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="stock"
+                      placeholder="Enter stock quantity"
+                      value={newProduct.stock}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Category</label>
+                    <select
+                      className="form-control"
+                      name="categoryId"
+                      value={newProduct.categoryId}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-      {/* Update Form Modal */}
-      {pendingAction === 'UpdateForm' && updateProductForm()}
+                  <div className="mb-3">
+                    <label className="form-label">Upload Image</label>
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="image/*"
+                      onChange={handleImageChange} // Handle image selection
+                      required
+                    />
+                  </div>
+
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setShowAddProduct(false)}
+                    >
+                      Discard
+                    </button>
+                    <button
+                      type="submit"
+                      style={{
+                        backgroundColor: '#6362b5',
+                        borderColor: '#6362b5',
+                      }}
+                      className="btn btn-primary"
+                    >
+                      Add Product
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Product Modal */}
+      {showUpdateModal && selectedProduct && (
+        <div className="modal show fade d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Update Product</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowUpdateModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleUpdate}>
+                  {/* Update Product Form */}
+                  <div className="mb-3">
+                    <label className="form-label">Product Name</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      value={selectedProduct.name}
+                      onChange={handleUpdateInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Description</label>
+                    <textarea
+                      className="form-control"
+                      name="description"
+                      value={selectedProduct.description}
+                      onChange={handleUpdateInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Price</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="price"
+                      value={selectedProduct.price}
+                      onChange={handleUpdateInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Stock</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      name="stock"
+                      value={selectedProduct.stock}
+                      onChange={handleUpdateInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Category</label>
+                    <select
+                      className="form-control"
+                      name="categoryId"
+                      value={selectedProduct.category.id}
+                      onChange={handleUpdateInputChange}
+                      required
+                    >
+                      <option value="">Select Category</option>
+                      {categories.map((category) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mb-3">
+                    <label className="form-label">Upload Image</label>
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="image/*"
+                      onChange={handleImageChange} // Handle new image selection if necessary
+                    />
+                  </div>
+
+                  <div className="modal-footer">
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setShowUpdateModal(false)}
+                    >
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary">
+                      Update Product
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

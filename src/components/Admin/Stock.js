@@ -28,6 +28,8 @@ const Stock = () => {
   })
   const [imageFile, setImageFile] = useState(null) // For storing the image file
 
+  const API_URL = process.env.REACT_APP_API_URL
+
   // Fetch products and categories from API on component mount
   useEffect(() => {
     getProducts()
@@ -36,7 +38,7 @@ const Stock = () => {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get('http://localhost:5034/api/products')
+      const response = await axios.get(`${API_URL}/api/products`)
       setData(response.data)
       calculateLowStockCount(response.data)
       calculateTotalStockValue(response.data)
@@ -47,9 +49,7 @@ const Stock = () => {
 
   const getCategories = async () => {
     try {
-      const response = await axios.get(
-        'http://localhost:5034/api/products/category'
-      )
+      const response = await axios.get(`${API_URL}/api/products/category`)
       setCategories(response.data)
     } catch (error) {
       console.error('Error fetching categories:', error)
@@ -100,7 +100,7 @@ const Stock = () => {
     formData.append('imageFile', imageFile) // Append the selected image file
 
     try {
-      await axios.post('http://localhost:5034/api/products', formData, {
+      await axios.post(`${API_URL}/api/products`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -132,7 +132,7 @@ const Stock = () => {
 
     try {
       await axios.put(
-        `http://localhost:5034/api/products/${selectedProduct.id}`,
+        `${API_URL}/api/products/${selectedProduct.id}`,
         formData,
         {
           headers: {
@@ -152,9 +152,7 @@ const Stock = () => {
   // Delete a product
   const handleDelete = async () => {
     try {
-      await axios.delete(
-        `http://localhost:5034/api/products/${selectedProduct.id}`
-      )
+      await axios.delete(`${API_URL}/api/products/${selectedProduct.id}`)
       getProducts() // Refresh product list after deletion
       setShowModal(false)
       setShowConfirmation(false)

@@ -18,11 +18,11 @@ export default function Categories() {
     getCategories()
   }, [])
 
+  const API_URL = process.env.REACT_APP_API_URL
+
   const getCategories = async () => {
     try {
-      const response = await axios.get(
-        'http://localhost:5034/api/products/category'
-      )
+      const response = await axios.get(`${API_URL}/api/products/category`)
       setCategories(response.data)
     } catch (error) {
       console.error('Error fetching categories:', error)
@@ -41,10 +41,7 @@ export default function Categories() {
       message: 'Are you sure you want to add this category?',
       onConfirm: async () => {
         try {
-          await axios.post(
-            'http://localhost:5034/api/products/category',
-            newCategory
-          )
+          await axios.post(`${API_URL}/api/products/category`, newCategory)
           getCategories() // Refresh categories list after addition
           setIsFormModalOpen(false)
           setConfirmMessage(null)
@@ -71,7 +68,7 @@ export default function Categories() {
       onConfirm: async () => {
         try {
           await axios.put(
-            `http://localhost:5034/api/products/category/${selectedCategory.id}`,
+            `${API_URL}/api/products/category/${selectedCategory.id}`,
             { ...selectedCategory, status: newStatus }
           )
           setIsModalOpen(false)

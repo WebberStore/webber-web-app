@@ -1,27 +1,33 @@
 export const DASHBOARD_SIDEBAR_LINKS = [
   {
-    key: 'dashboard',
-    label: 'Orders',
-    path: '/csr/order',
+    key: 'notifications',
+    label: 'Notifications',
+    path: '/vendor/notifications',
     icon: 'bi-speedometer2',
   },
-  // {
-  //   key: 'categories',
-  //   label: 'Categories',
-  //   path: '/admin/categories',
-  //   icon: 'bi-box-seam',
-  // },
-
   {
-    key: 'accounts',
-    label: 'Accounts',
-    path: '/csr/accountsActivate',
-    icon: 'bi-people',
+    key: 'stock',
+    label: 'Stock',
+    path: '/vendor/stock',
+    icon: 'bi-speedometer2',
   },
+  {
+    key: 'orders',
+    label: 'Orders',
+    path: '/vendor/orders',
+    icon: 'bi-box-seam',
+  },
+
+  // {
+  //   key: 'accounts',
+  //   label: 'Accounts',
+  //   path: '/csr/accountsActivate',
+  //   icon: 'bi-people',
+  // },
   {
     key: 'profile',
     label: 'Profile',
-    path: '/csr/userProfile',
+    path: '/vendor/userProfile',
     icon: 'bi-person',
   },
 ]

@@ -1,17 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
+import { Modal, Button } from 'react-bootstrap'
 
 export default function Users() {
   const [users, setUsers] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [isUpdateSuccessOpen, setIsUpdateSuccessOpen] = useState(false)
+  const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
+  const [selectedVendor, setSelectedVendor] = useState(null)
   const [newUser, setNewUser] = useState({
-    name: '',
     email: '',
+    name: '',
     password: '',
     role: 'Vendor',
   })
-  const [confirmDelete, setConfirmDelete] = useState(null)
+
+  const API_URL = process.env.REACT_APP_API_URL
 
   // Fetch all vendors from the API
   useEffect(() => {
@@ -20,7 +28,7 @@ export default function Users() {
 
   const getUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5034/api/user')
+      const response = await axios.get(`${API_URL}/api/user`)
       const vendors = response.data.filter((user) => user.role === 'Vendor')
       setUsers(vendors)
     } catch (error) {
@@ -33,40 +41,46 @@ export default function Users() {
     setNewUser((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleUpdateChange = (e) => {
+    const { name, value } = e.target
+    setSelectedVendor((prev) => ({ ...prev, [name]: value }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (window.confirm('Are you sure you want to add this vendor?')) {
-      const payload = {
-        Email: newUser.email,
-        Name: newUser.name,
-        Password: newUser.password,
-        Role: 'Vendor',
-      }
-      try {
-        await axios.post('http://localhost:5034/api/user', payload)
-        setIsModalOpen(false)
-        alert('Vendor added successfully!')
-        getUsers() // Refresh the users after adding a new vendor
-      } catch (error) {
-        console.error('Error creating vendor:', error)
-      }
+    try {
+      await axios.post(`${process.env.REACT_APP_API_URL}/api/user`, newUser)
+      setIsSuccessModalOpen(true)
+      getUsers()
+      setIsModalOpen(false)
+    } catch (error) {
+      console.error('Error adding user:', error)
     }
   }
 
-  const confirmDeleteUser = (id) => {
-    setConfirmDelete(id)
+  const handleUpdateVendor = async (e) => {
+    e.preventDefault()
+    try {
+      await axios.put(
+        `${process.env.REACT_APP_API_URL}/api/user/${selectedVendor.id}`,
+        selectedVendor
+      )
+      getUsers()
+      setIsUpdateSuccessOpen(true)
+      setIsUpdateModalOpen(false)
+    } catch (error) {
+      console.error('Error updating vendor:', error)
+    }
   }
 
-  const deleteUser = async () => {
-    if (window.confirm('Are you sure you want to delete this vendor?')) {
-      try {
-        await axios.delete(`http://localhost:5034/api/user/${confirmDelete}`)
-        setConfirmDelete(null)
-        alert('Vendor deleted successfully!')
-        getUsers() // Refresh the users after deletion
-      } catch (error) {
-        console.error('Error deleting vendor:', error)
-      }
+  const deleteUser = async (id) => {
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}/api/user/${id}`)
+      getUsers()
+      setIsDeleteModalOpen(false)
+      setIsDeleteSuccessOpen(true)
+    } catch (error) {
+      console.error('Error deleting vendor:', error)
     }
   }
 
@@ -78,74 +92,164 @@ export default function Users() {
   }
 
   const renderModal = () => (
-    <div className="modal show d-block" tabIndex="-1" role="dialog">
-      <div className="modal-dialog" role="document">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title">Add New Vendor</h5>
+    <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Add New Vendor</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label>Name</label>
+            <input
+              type="text"
+              name="name"
+              value={newUser.name}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
           </div>
-          <div className="modal-body">
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label>Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Vendor Name"
-                  value={newUser.name}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={newUser.email}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Password"
-                  value={newUser.password}
-                  onChange={handleChange}
-                  className="form-control"
-                  required
-                />
-              </div>
-
-              <div className="d-flex justify-content-end mt-3">
-                <button
-                  type="submit"
-                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
-                  className="btn btn-primary me-2"
-                >
-                  Add New Vendor
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setIsModalOpen(false)}
-                >
-                  Close
-                </button>
-              </div>
-            </form>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={newUser.email}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
           </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={newUser.password}
+              onChange={handleChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="d-flex justify-content-end mt-3">
+            <Button type="submit" className="btn btn-primary">
+              Add New Vendor
+            </Button>
+          </div>
+        </form>
+      </Modal.Body>
+    </Modal>
+  )
+
+  const renderUpdateModal = () => (
+    <Modal show={isUpdateModalOpen} onHide={() => setIsUpdateModalOpen(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Update Vendor</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <form onSubmit={handleUpdateVendor}>
+          <div className="form-group">
+            <label>Email</label>
+            <input
+              type="email"
+              name="email"
+              value={selectedVendor?.email || ''}
+              onChange={handleUpdateChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Name</label>
+            <input
+              type="text"
+              name="name"
+              value={selectedVendor?.name || ''}
+              onChange={handleUpdateChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Password</label>
+            <input
+              type="password"
+              name="password"
+              value={selectedVendor?.password || ''}
+              onChange={handleUpdateChange}
+              className="form-control"
+              required
+            />
+          </div>
+          <div className="d-flex justify-content-end mt-3">
+            <Button type="submit" className="btn btn-primary">
+              Update Vendor
+            </Button>
+          </div>
+        </form>
+      </Modal.Body>
+    </Modal>
+  )
+
+  const renderDeleteModal = () => (
+    <Modal show={isDeleteModalOpen} onHide={() => setIsDeleteModalOpen(false)}>
+      <Modal.Header closeButton>
+        <Modal.Title>Confirm Deletion</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>Are you sure you want to delete this vendor?</p>
+        <div className="d-flex justify-content-end">
+          <Button
+            onClick={() => deleteUser(selectedVendor.id)}
+            className="btn btn-danger"
+          >
+            Yes, Delete
+          </Button>
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
+  )
+
+  const renderSuccessModal = () => (
+    <Modal
+      show={isSuccessModalOpen}
+      onHide={() => setIsSuccessModalOpen(false)}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Success</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>Vendor added successfully!</p>
+      </Modal.Body>
+    </Modal>
+  )
+
+  const renderUpdateSuccessModal = () => (
+    <Modal
+      show={isUpdateSuccessOpen}
+      onHide={() => setIsUpdateSuccessOpen(false)}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Success</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>Vendor updated successfully!</p>
+      </Modal.Body>
+    </Modal>
+  )
+
+  const renderDeleteSuccessModal = () => (
+    <Modal
+      show={isDeleteSuccessOpen}
+      onHide={() => setIsDeleteSuccessOpen(false)}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>Success</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>Vendor deleted successfully!</p>
+      </Modal.Body>
+    </Modal>
   )
 
   return (
@@ -153,20 +257,24 @@ export default function Users() {
       <div className="d-flex justify-content-between mb-3">
         <h3>Vendors</h3>
         <div>
-          <button
+          <Button
             onClick={() => setIsModalOpen(true)}
             className="btn btn-success me-2"
-            style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
           >
             Add New Vendor
-          </button>
-          <button onClick={exportToExcel} className="btn btn-primary">
+          </Button>
+          <Button onClick={exportToExcel} className="btn btn-primary">
             Export
-          </button>
+          </Button>
         </div>
       </div>
 
       {isModalOpen && renderModal()}
+      {isUpdateModalOpen && renderUpdateModal()}
+      {isDeleteModalOpen && renderDeleteModal()}
+      {isSuccessModalOpen && renderSuccessModal()}
+      {isUpdateSuccessOpen && renderUpdateSuccessModal()}
+      {isDeleteSuccessOpen && renderDeleteSuccessModal()}
 
       <table className="table table-bordered">
         <thead>
@@ -175,19 +283,33 @@ export default function Users() {
             <th>Email</th>
             <th>Name</th>
             <th>Role</th>
+            <th>Rating</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user, index) => (
             <tr key={user.id}>
-              <td>{index}</td> {/* Custom numbering starting from 0 */}
+              <td>{index}</td>
               <td>{user.email}</td>
               <td>{user.name}</td>
               <td>{user.role}</td>
+              <td>{user.rating}</td>
               <td>
                 <button
-                  onClick={() => confirmDeleteUser(user.id)}
+                  onClick={() => {
+                    setSelectedVendor(user)
+                    setIsUpdateModalOpen(true)
+                  }}
+                  className="btn btn-primary me-2"
+                >
+                  Update
+                </button>
+                <button
+                  onClick={() => {
+                    setSelectedVendor(user)
+                    setIsDeleteModalOpen(true)
+                  }}
                   className="btn btn-danger"
                 >
                   Delete
@@ -197,38 +319,6 @@ export default function Users() {
           ))}
         </tbody>
       </table>
-
-      {/* Confirmation Modal for Deleting */}
-      {confirmDelete && (
-        <div className="modal show d-block" tabIndex="-1" role="dialog">
-          <div className="modal-dialog" role="document">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h5 className="modal-title">Confirm Delete</h5>
-              </div>
-              <div className="modal-body">
-                <p>Are you sure you want to delete this vendor?</p>
-                <div className="d-flex justify-content-end mt-3">
-                  <button
-                    type="button"
-                    className="btn btn-danger me-2"
-                    onClick={deleteUser}
-                  >
-                    Yes, Delete
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => setConfirmDelete(null)}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

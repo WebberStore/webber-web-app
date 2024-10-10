@@ -7,7 +7,6 @@ import RequireAuth from '../components/login/RequireAuth'
 import Users from '../components/Admin/Users'
 
 import Stock from '../components/Admin/Stock'
-import UserProfile from '../components/Admin/UserProfile'
 import Order from '../components/Admin/Order'
 import Categories from '../components/Admin/Categories'
 
@@ -18,7 +17,6 @@ export default function adminRoutes() {
       <Route path="/admin" element={<Layout />}>
         {/* <Route index element={<Dashboard />} /> */}
         <Route path="stock" element={<Stock />} />
-        <Route path="userProfile" element={<UserProfile />} />
         <Route path="users" element={<Users />} />
         <Route path="order" element={<Order />} />
         <Route path="categories" element={<Categories />} />

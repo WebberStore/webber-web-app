@@ -23,12 +23,6 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: '/admin/users',
     icon: 'bi-people',
   },
-  {
-    key: 'profile',
-    label: 'Profile',
-    path: '/admin/userProfile',
-    icon: 'bi-person',
-  },
 ]
 
 export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [

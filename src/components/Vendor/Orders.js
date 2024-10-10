@@ -1,91 +1,53 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Table,
   Button,
-  Tab,
   Tabs,
-  Pagination,
+  Tab,
   InputGroup,
   FormControl,
+  Pagination,
   Modal,
 } from 'react-bootstrap'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
-import OrderDetails from './OrderDetails' // Import the order details component
 
 const Orders = () => {
-  const [key, setKey] = useState('newOrders') // Managing the active tab
-  const [showModal, setShowModal] = useState(false) // State to manage modal visibility
+  const [key, setKey] = useState('newOrders') // Tab state
+  const [showModal, setShowModal] = useState(false) // Modal state
   const [selectedOrder, setSelectedOrder] = useState(null) // Store selected order
-  const [searchTerm, setSearchTerm] = useState('') // State for search functionality
+  const [showConfirmModal, setShowConfirmModal] = useState(false) // Confirmation modal state
+  const [searchTerm, setSearchTerm] = useState('') // Search functionality
   const [currentPage, setCurrentPage] = useState(1) // Pagination state
+  const [orders, setOrders] = useState([]) // Store orders
+  const ordersPerPage = 10
 
-  const orders = [
-    {
-      id: 1,
-      product: 'Men T-shirt Black',
-      quantity: 15,
-      category: 'Mens',
-      customer: 'Kamal',
-      total: 1540,
-      status: 'Pending',
-    },
-    {
-      id: 2,
-      product: 'Men T-shirt Blue',
-      quantity: 10,
-      category: 'Mens',
-      customer: 'Silva',
-      total: 1540,
-      status: 'Pending',
-    },
-    {
-      id: 3,
-      product: 'Cap Red',
-      quantity: 5,
-      category: 'Accessories',
-      customer: 'Shani',
-      total: 2100,
-      status: 'Accepted',
-    },
-    {
-      id: 4,
-      product: 'Women Denim',
-      quantity: 4,
-      category: 'Women',
-      customer: 'Kamal',
-      total: 5400,
-      status: 'Accepted',
-    },
-    {
-      id: 5,
-      product: 'Women Shirt',
-      quantity: 11,
-      category: 'Women',
-      customer: 'Kamal',
-      total: 2400,
-      status: 'Rejected',
-    },
-    // Add more data here
-  ]
+  const API_URL = process.env.REACT_APP_API_URL
+  const vendorId = '66fabea22165a016474e7a6e'
+
+  // Fetch orders from API
+  useEffect(() => {
+    fetch(`${API_URL}/api/order/item/vendor/${vendorId}`) // Example URL
+      .then((response) => response.json())
+      .then((data) => setOrders(data))
+      .catch((error) => console.log(error))
+  }, [])
 
   // Filter orders based on tab and search term
   const filteredOrders = orders
     .filter((order) => {
       if (key === 'newOrders' && order.status === 'Pending') return true
-      if (key === 'acceptOrders' && order.status === 'Accepted') return true
-      if (key === 'rejectOrders' && order.status === 'Rejected') return true
+      if (key === 'deliveredOrders' && order.status === 'Delivered') return true
       return false
     })
     .filter((order) => {
       return (
-        order.product.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase())
+        order.product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        order.customer.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     })
 
   // Pagination setup
-  const ordersPerPage = 10
   const indexOfLastOrder = currentPage * ordersPerPage
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage
   const currentOrders = filteredOrders.slice(
@@ -99,44 +61,63 @@ const Orders = () => {
     setShowModal(true) // Show modal when "View" is clicked
   }
 
+  // Update the order status to "Delivered"
+  const handleDelivered = (order) => {
+    fetch(`${API_URL}api/order/item/status/${order.id}?status=Delivered`, {
+      method: 'PUT',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const updatedOrders = orders.map((o) =>
+          o.id === order.id ? { ...o, status: 'Delivered' } : o
+        )
+        setOrders(updatedOrders)
+        setShowModal(false) // Close the main modal after update
+        setShowConfirmModal(false) // Close confirmation modal after update
+      })
+      .catch((error) => console.log(error))
+  }
+
+  // Download PDF function for main data table
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.text('Orders Report', 14, 10)
     doc.autoTable({
       startY: 20,
-      head: [
-        [
-          'No',
-          'Product',
-          'Quantity',
-          'Category',
-          'Customer',
-          'Total Amount',
-          'Status',
-        ],
-      ],
+      head: [['No', 'Product', 'Quantity', 'Total Amount', 'Status']],
       body: filteredOrders.map((order, index) => [
         index + 1,
-        order.product,
+        order.product.name,
         order.quantity,
-        order.category,
-        order.customer,
-        `Rs. ${order.total}`,
+        `Rs. ${order.totalPrice}`,
         order.status,
       ]),
     })
     doc.save('orders_report.pdf')
   }
 
+  // Download PDF for the modal (Order details)
+  const downloadOrderDetailsPDF = (order) => {
+    const doc = new jsPDF()
+    doc.text(`Order ID: ${order.orderId}`, 14, 10)
+    doc.autoTable({
+      startY: 20,
+      head: [['No', 'Product Name', 'Quantity', 'Total Price']],
+      body: [
+        [1, order.product.name, order.quantity, `Rs. ${order.totalPrice}`],
+      ],
+    })
+    doc.save('order_details.pdf')
+  }
+
   return (
-    <div className="container mt-4">
+    <div className="container mt-2">
       <h3>Orders</h3>
 
       {/* Tabs for toggling between orders */}
       <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
         <Tab eventKey="newOrders" title="New Orders" />
-        <Tab eventKey="acceptOrders" title="Accept Orders" />
-        <Tab eventKey="rejectOrders" title="Reject Orders" />
+        <Tab eventKey="deliveredOrders" title="Delivered Orders" />
       </Tabs>
 
       {/* Search and download functionality */}
@@ -162,8 +143,6 @@ const Orders = () => {
             <th>No</th>
             <th>Product</th>
             <th>Quantity</th>
-            <th>Category</th>
-            <th>Customer</th>
             <th>Total Amount</th>
             <th>Status</th>
             <th>Action</th>
@@ -173,17 +152,15 @@ const Orders = () => {
           {currentOrders.map((order, index) => (
             <tr key={order.id}>
               <td>{indexOfFirstOrder + index + 1}</td>
-              <td>{order.product}</td>
+              <td>{order.product.name}</td>
               <td>{order.quantity}</td>
-              <td>{order.category}</td>
-              <td>{order.customer}</td>
-              <td>{`Rs. ${order.total}`}</td>
+              <td>{`Rs. ${order.totalPrice}`}</td>
               <td>
                 <Button
                   variant={
                     order.status === 'Pending'
                       ? 'secondary'
-                      : order.status === 'Accepted'
+                      : order.status === 'Delivered'
                       ? 'success'
                       : 'danger'
                   }
@@ -233,11 +210,76 @@ const Orders = () => {
           <Modal.Title>Order Details</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          <OrderDetails order={selectedOrder} />
+          {selectedOrder && (
+            <>
+              <h5>Order ID: {selectedOrder.orderId}</h5>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>No</th>
+                    <th>Product Name</th>
+                    <th>Quantity</th>
+                    <th>Total Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>1</td>
+                    <td>{selectedOrder.product.name}</td>
+                    <td>{selectedOrder.quantity}</td>
+                    <td>{`Rs. ${selectedOrder.totalPrice}`}</td>
+                  </tr>
+                </tbody>
+              </Table>
+              <Button
+                style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
+                onClick={() => downloadOrderDetailsPDF(selectedOrder)}
+              >
+                Download Order PDF
+              </Button>
+              {/* Show "Mark as Delivered" button only if the status is "Pending" */}
+              {selectedOrder.status === 'Pending' && (
+                <Button
+                  style={{
+                    backgroundColor: 'green',
+                    borderColor: 'green',
+                    marginLeft: '10px',
+                  }}
+                  onClick={() => setShowConfirmModal(true)} // Open confirmation modal
+                >
+                  Mark as Delivered
+                </Button>
+              )}
+            </>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowModal(false)}>
             Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Confirmation Modal */}
+      <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delivery</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to mark this order as delivered?
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowConfirmModal(false)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            onClick={() => handleDelivered(selectedOrder)} // Mark as Delivered
+          >
+            Yes, Deliver
           </Button>
         </Modal.Footer>
       </Modal>
