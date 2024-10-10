@@ -3,18 +3,23 @@ import { Table, Button, Modal, Pagination, Form, Alert } from 'react-bootstrap'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
-const Order = () => {
+const OrderCancel = () => {
   const [orders, setOrders] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [showConfirmModal, setShowConfirmModal] = useState(false) // For confirmation message
+  const [cancelReason, setCancelReason] = useState('') // For storing cancel reason
   const [searchTerm, setSearchTerm] = useState('')
+  const [alertMessage, setAlertMessage] = useState('') // For API response messages
+  const [alertVariant, setAlertVariant] = useState('info') // Alert type (success or danger)
+  const [showResponseModal, setShowResponseModal] = useState(false) // For showing API response
+  const [responseMessage, setResponseMessage] = useState('') // Store API response text
 
   const API_URL = process.env.REACT_APP_API_URL
 
   useEffect(() => {
-    // Fetch orders from API
-    fetch(`${API_URL}/api/order`)
+    // Fetch cancel request orders from API
+    fetch(`${API_URL}/api/order/cancel/requests`)
       .then((response) => response.json())
       .then((data) => setOrders(data))
       .catch((error) => console.error('Error fetching orders:', error))
@@ -24,6 +29,8 @@ const Order = () => {
   const handleViewClick = (order) => {
     setSelectedOrder(order)
     setShowModal(true)
+    setAlertMessage('') // Reset alert when opening a new modal
+    setCancelReason('') // Reset cancel reason when opening a new modal
   }
 
   // Handle search functionality
@@ -41,26 +48,16 @@ const Order = () => {
         .includes(searchTerm)
   )
 
-  const totalOrders = orders.length
-  const deliveredOrders = orders.filter(
-    (order) => order.status === 'Delivered'
-  ).length
-  const partialDeliveredOrders = orders.filter(
-    (order) => order.status === 'Partial_Delivered'
-  ).length
-  const canceledOrders = orders.filter(
-    (order) => order.status === 'Canceled'
-  ).length
-
   const downloadPDF = () => {
     const doc = new jsPDF()
-    doc.text('Order Report', 14, 16)
+    doc.text('Order Cancellation Report', 14, 16)
 
     const tableColumn = [
       'No',
       'Order Items',
       'Customer',
       'Order Price',
+      'Reason',
       'Status',
     ]
     const tableRows = []
@@ -74,6 +71,7 @@ const Order = () => {
         orderItems,
         order.customer.name,
         `Rs. ${order.orderPrice}`,
+        order.cancelReason,
         order.status,
       ]
       tableRows.push(orderData)
@@ -85,62 +83,48 @@ const Order = () => {
       startY: 20,
     })
 
-    doc.save('orders-report.pdf')
+    doc.save('orders-cancellation-report.pdf')
   }
 
-  // Handle order delivery action
-  const handleOrderDelivered = () => {
-    // Show confirmation modal before marking the order as delivered
-    setShowConfirmModal(true)
+  // Handle order cancel action
+  const handleOrderCancel = () => {
+    if (!cancelReason) {
+      setAlertMessage('Please enter a reason for cancellation.')
+      setAlertVariant('danger')
+    } else {
+      // Show confirmation modal before canceling the order
+      setShowConfirmModal(true)
+    }
   }
 
-  // Confirm order delivery
-  const confirmOrderDelivered = () => {
-    // Code for updating order to delivered would go here
-    // alert('Order delivered successfully')
-    setShowConfirmModal(false)
-    setShowModal(false) // Close the main modal
+  // Confirm order cancellation
+  const confirmOrderCancel = () => {
+    // Call the API to cancel the order with the entered reason
+    const cancelApiUrl = `${API_URL}/api/order/cancel/${
+      selectedOrder.id
+    }?cancelReason=${encodeURIComponent(cancelReason)}`
+
+    fetch(cancelApiUrl, {
+      method: 'PUT',
+    })
+      .then((response) => response.text()) // Use response.text() to capture API response
+      .then((data) => {
+        setResponseMessage(data) // Store the API response
+        setAlertVariant('info') // Set the alert variant to info or success
+        setShowResponseModal(true) // Show response modal
+        setShowConfirmModal(false) // Hide confirmation modal
+      })
+      .catch((error) => {
+        setResponseMessage('Error canceling the order.')
+        setAlertVariant('danger')
+        setShowResponseModal(true) // Show response modal in case of error
+        setShowConfirmModal(false) // Hide confirmation modal
+      })
   }
 
   return (
     <div className="container mt-4 bg-gray-100 h-screen flex justify-center items-center">
-      {/* Summary Cards */}
-      <div className="row mb-4">
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title">Total Orders</h5>
-              <p className="card-text">{totalOrders}</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title">Delivered Orders</h5>
-              <p className="card-text">{deliveredOrders}</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title">Partially Delivered Orders</h5>
-              <p className="card-text">{partialDeliveredOrders}</p>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <div className="card text-center">
-            <div className="card-body">
-              <h5 className="card-title">Cancelled Orders</h5>
-              <p className="card-text">{canceledOrders}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <h4>Orders</h4>
+      <h4>Orders Cancellation Requests</h4>
       <div className="d-flex justify-content-between">
         <input
           type="text"
@@ -164,6 +148,7 @@ const Order = () => {
             <th>Order Items</th>
             <th>Customer</th>
             <th>Order Price</th>
+            <th>Reason</th>
             <th>Status</th>
             <th>Action</th>
           </tr>
@@ -177,6 +162,7 @@ const Order = () => {
               </td>
               <td>{order.customer.name}</td>
               <td>Rs.{order.orderPrice}.00</td>
+              <td>{order.cancelReason}</td>
               <td>
                 <Button
                   variant={
@@ -186,9 +172,7 @@ const Order = () => {
                       ? 'success'
                       : order.status === 'Canceled'
                       ? 'danger'
-                      : order.status === 'Partial_Delivered'
-                      ? 'info'
-                      : 'warning'
+                      : 'info'
                   }
                   size="sm"
                 >
@@ -237,6 +221,10 @@ const Order = () => {
                 <strong>Grand Total:</strong> Rs.{selectedOrder.orderPrice}.00
                 <br></br>
                 <strong>Order Status:</strong> {selectedOrder.status}
+                <br></br>
+                <strong style={{ color: 'red' }}>
+                  Order Cancel Reason: {selectedOrder.cancelReason}
+                </strong>
                 &nbsp;&nbsp;
               </p>
             </Modal.Title>
@@ -269,44 +257,52 @@ const Order = () => {
                       />
                     </td>
                     <td>{item.product.name}</td>
-                    <td>{item.product.price}</td>
+                    <td>Rs.{item.product.price}.00</td>
                     <td>{item.quantity}</td>
                     <td>{item.product.vendor.name}</td>
-                    <td>Rs.{item.totalPrice}.00</td>
+                    <td>{item.totalPrice}</td>
                     <td>{selectedOrder.customer.name}</td>
                     <td>{selectedOrder.status}</td>
                   </tr>
                 ))}
               </tbody>
             </Table>
+
+            <Form.Group className="mt-3">
+              <Form.Label>Cancel Note</Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter a note for cancellation"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+              />
+            </Form.Group>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowModal(false)}>
               Close
             </Button>
             <Button
-              variant="info"
-              onClick={handleOrderDelivered}
+              variant="danger"
+              onClick={handleOrderCancel}
               className="me-2"
             >
-              Order Delivered
+              Cancel Order
             </Button>
           </Modal.Footer>
         </Modal>
       )}
 
-      {/* Confirmation Modal for Order Delivered */}
+      {/* Confirmation Modal for Cancel Order */}
       <Modal
         show={showConfirmModal}
         onHide={() => setShowConfirmModal(false)}
         centered
       >
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Delivery</Modal.Title>
+          <Modal.Title>Confirm Cancellation</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to mark this order as delivered?
-        </Modal.Body>
+        <Modal.Body>Are you sure you want to cancel this order?</Modal.Body>
         <Modal.Footer>
           <Button
             variant="secondary"
@@ -314,8 +310,30 @@ const Order = () => {
           >
             Cancel
           </Button>
-          <Button variant="primary" onClick={confirmOrderDelivered}>
-            Yes, Deliver Order
+          <Button variant="danger" onClick={confirmOrderCancel}>
+            Yes, Cancel Order
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* API Response Modal */}
+      <Modal
+        show={showResponseModal}
+        onHide={() => setShowResponseModal(false)}
+        centered
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Response</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Alert variant={alertVariant}>{responseMessage}</Alert>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowResponseModal(false)}
+          >
+            Close
           </Button>
         </Modal.Footer>
       </Modal>
@@ -323,4 +341,4 @@ const Order = () => {
   )
 }
 
-export default Order
+export default OrderCancel

@@ -5,12 +5,12 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: '/csr/order',
     icon: 'bi-speedometer2',
   },
-  // {
-  //   key: 'categories',
-  //   label: 'Categories',
-  //   path: '/admin/categories',
-  //   icon: 'bi-box-seam',
-  // },
+  {
+    key: 'categories',
+    label: 'Order Cancellation',
+    path: '/csr/orderCancel',
+    icon: 'bi-box-seam',
+  },
 
   {
     key: 'accounts',
@@ -18,12 +18,12 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: '/csr/accountsActivate',
     icon: 'bi-people',
   },
-  {
-    key: 'profile',
-    label: 'Profile',
-    path: '/csr/userProfile',
-    icon: 'bi-person',
-  },
+  // {
+  //   key: 'profile',
+  //   label: 'Profile',
+  //   path: '/csr/userProfile',
+  //   icon: 'bi-person',
+  // },
 ]
 
 export const DASHBOARD_SIDEBAR_BOTTOM_LINKS = [

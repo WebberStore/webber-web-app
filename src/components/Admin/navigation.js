@@ -2,7 +2,19 @@ export const DASHBOARD_SIDEBAR_LINKS = [
   {
     key: 'dashboard',
     label: 'Dashboard',
+    path: '/admin',
+    icon: 'bi-speedometer2',
+  },
+  {
+    key: 'order',
+    label: 'Orders',
     path: '/admin/order',
+    icon: 'bi-speedometer2',
+  },
+  {
+    key: 'orderCancellation',
+    label: 'Order Cancellation',
+    path: '/admin/orderCancel',
     icon: 'bi-speedometer2',
   },
   {
@@ -19,8 +31,14 @@ export const DASHBOARD_SIDEBAR_LINKS = [
   },
   {
     key: 'accounts',
-    label: 'Accounts',
+    label: 'Accounts - Vendors',
     path: '/admin/users',
+    icon: 'bi-people',
+  },
+  {
+    key: 'customers',
+    label: 'Accounts - Customers',
+    path: '/admin/customers',
     icon: 'bi-people',
   },
 ]

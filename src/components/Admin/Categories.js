@@ -294,6 +294,7 @@ export default function Categories() {
         <thead>
           <tr>
             <th>Category ID</th>
+            <th>Image</th>
             <th>Name</th>
             <th>Status</th>
             <th>Created At</th>
@@ -305,6 +306,14 @@ export default function Categories() {
             <tr key={category.id}>
               <td>{index + 1 + (currentPage - 1) * itemsPerPage}</td>{' '}
               {/* Custom ID */}
+              <td>
+                <img
+                  src={category.imageUrl}
+                  alt={category.name}
+                  className="rounded-circle"
+                  style={{ width: '50px', height: '50px' }}
+                />
+              </td>
               <td>{category.name}</td>
               <td>{category.status ? 'Active' : 'Deactive'}</td>
               <td>{new Date(category.createdAt).toLocaleString()}</td>

@@ -253,7 +253,7 @@ export default function Users() {
   )
 
   return (
-    <div className="container mt-5">
+    <div className="container mt-4">
       <div className="d-flex justify-content-between mb-3">
         <h3>Vendors</h3>
         <div>

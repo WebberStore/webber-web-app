@@ -20,6 +20,8 @@ const AccountsActivate = () => {
   const [confirmAction, setConfirmAction] = useState(null) // To store the action for confirmation
   const [showConfirmation, setShowConfirmation] = useState(false) // Show confirmation inside modal
 
+  const API_URL = process.env.REACT_APP_API_URL
+
   // Fetch users with the role of Customer from the API
   useEffect(() => {
     getUsers()
@@ -27,7 +29,7 @@ const AccountsActivate = () => {
 
   const getUsers = async () => {
     try {
-      const response = await axios.get('http://localhost:5034/api/user')
+      const response = await axios.get(`${API_URL}/api/user`)
       const customers = response.data.filter((user) => user.role === 'Customer')
       setData(customers)
     } catch (error) {
@@ -45,10 +47,7 @@ const AccountsActivate = () => {
 
       try {
         // Send the full updated user data as the request payload
-        await axios.put(
-          `http://localhost:5034/api/user/${selectedUser.id}`,
-          updatedUser
-        )
+        await axios.put(`${API_URL}/api/user/${selectedUser.id}`, updatedUser)
 
         // Refresh the data after updating the status
         getUsers()
