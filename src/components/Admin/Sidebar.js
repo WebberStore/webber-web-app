@@ -3,32 +3,35 @@ import { FaLeaf } from 'react-icons/fa'
 import {
   DASHBOARD_SIDEBAR_BOTTOM_LINKS,
   DASHBOARD_SIDEBAR_LINKS,
-} from './libs/helpers/navigation'
+} from './navigation'
 import { Link, useLocation } from 'react-router-dom'
 import classNames from 'classnames'
 import { HiOutlineLogout } from 'react-icons/hi'
 
 const linkClass =
-  'flex items-center gap-2 font-light px-3 py-2 hover:bg-neutral-700 hover:no-underline active:bg-neutral-600 rounded-sm text-base'
+  'd-flex align-items-center gap-2 fw-light px-3 py-2 text-decoration-none rounded text-white'
 
 export default function Sidebar() {
   return (
-    <div className="bg-neutral-900 w-60 p-3 flex flex-col text-white">
-      <div className="flex items-center gap-2 px-1 py-3">
+    <div
+      className="bg-dark p-3 d-flex flex-column text-white position-fixed h-100"
+      style={{ width: '240px' }}
+    >
+      <div className="d-flex align-items-center gap-2 px-1 py-3">
         <FaLeaf fontSize={24} color="#016a00" />
-        <span className="text-neutral-100 text-lg">OrbitArcX</span>
+        <span className="text-white fs-5">OrbitArcX</span>
       </div>
-      <div className="flex-1 py-2 flex flex-col gap-0.5">
+      <div className="flex-grow-1 py-2 d-flex flex-column gap-1">
         {DASHBOARD_SIDEBAR_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} />
         ))}
       </div>
-      <div className="flex flex-col gap-0.5 pt-2 border-t border-neutral-700">
+      <div className="d-flex flex-column gap-1 pt-2 border-top border-secondary">
         {DASHBOARD_SIDEBAR_BOTTOM_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} />
         ))}
-        <div className={classNames('text-red-500 cursor-pointer', linkClass)}>
-          <span className="text-xl">
+        <div className={classNames('text-danger cursor-pointer', linkClass)}>
+          <span className="fs-4">
             <HiOutlineLogout />
           </span>
           Log Out
@@ -45,13 +48,11 @@ function SidebarLink({ item }) {
     <Link
       to={item.path}
       className={classNames(
-        pathname === item.path
-          ? 'bg-neutral-700 text-white'
-          : 'text-neutral-400',
+        pathname === item.path ? 'bg-secondary text-white' : 'text-white', // Ensuring all text is white by default
         linkClass
       )}
     >
-      <span className="text-xl">{item.icon}</span>
+      <span className="fs-4">{item.icon}</span>
       {item.label}
     </Link>
   )

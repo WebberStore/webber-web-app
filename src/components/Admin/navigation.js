@@ -16,16 +16,11 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: '/',
     icon: <HiOutlineViewGrid />,
   },
-  {
-    key: 'dashboard',
-    label: 'Orders',
-    path: '/allSites',
-    icon: <HiOutlineDocumentText />,
-  },
+
   {
     key: 'dashboard',
     label: 'Products',
-    path: '/stock',
+    path: '/admin/stock',
     icon: <HiOutlineViewGrid />,
   },
   {
@@ -37,7 +32,7 @@ export const DASHBOARD_SIDEBAR_LINKS = [
   {
     key: 'orders',
     label: 'Profile',
-    path: '/orders',
+    path: '/admin/userProfile',
     icon: <HiOutlineAnnotation />,
   },
   // {
