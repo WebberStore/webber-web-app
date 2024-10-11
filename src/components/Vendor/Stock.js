@@ -18,6 +18,8 @@ const Stock = () => {
   const [showAddProduct, setShowAddProduct] = useState(false)
   const [pendingAction, setPendingAction] = useState(null) // Store action type (Update/Delete)
   const [searchTerm, setSearchTerm] = useState('')
+  const [apiResponseMessage, setApiResponseMessage] = useState('') // To store API response
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
@@ -152,16 +154,32 @@ const Stock = () => {
     }
   }
 
-  // Delete a product
+  // Delete a product and handle success/error messages
   const handleDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/api/products/${selectedProduct.id}`)
+      const response = await axios.delete(
+        `${API_URL}/api/products/${selectedProduct.id}`
+      )
+
+      // If the API provides a specific success message, display it
+      if (response.data.message) {
+        setApiResponseMessage(response.data.message) // API success message
+      } else {
+        setApiResponseMessage('Product deleted successfully!') // Default success message
+      }
+
       getProducts() // Refresh product list after deletion
-      setShowModal(false)
-      setShowConfirmation(false)
     } catch (error) {
-      console.error('Error deleting product:', error)
+      // Capture the exact error response text and show it in the modal
+      if (error.response && error.response.data) {
+        setApiResponseMessage(error.response.data) // Show exact API error message
+      } else {
+        setApiResponseMessage('An error occurred. Please try again.') // Fallback error message
+      }
     }
+
+    setShowConfirmation(false) // Close the confirmation prompt
+    setShowModal(true) // Keep the modal open to display the response
   }
 
   // Open action modal and set selected product
@@ -289,7 +307,6 @@ const Stock = () => {
           </div>
         </div>
       </div>
-
       {/* Search Input and Buttons */}
       <div className="row mb-3">
         <div className="col-md-8">
@@ -314,7 +331,6 @@ const Stock = () => {
           </button>
         </div>
       </div>
-
       {/* Data Table */}
       <div className="table-responsive">
         <table className="table table-bordered">
@@ -374,7 +390,6 @@ const Stock = () => {
           </tbody>
         </table>
       </div>
-
       {/* Pagination */}
       <div className="d-flex justify-content-between mt-4">
         <button
@@ -400,7 +415,6 @@ const Stock = () => {
         </button>
       </div>
 
-      {/* Action Modal */}
       {showModal && selectedProduct && (
         <div className="modal show fade d-block" tabIndex="-1">
           <div className="modal-dialog">
@@ -416,7 +430,24 @@ const Stock = () => {
                 ></button>
               </div>
               <div className="modal-body">
-                {showConfirmation ? confirmationPrompt() : actionButtons()}
+                {/* Show the exact API response (success or error) */}
+                {apiResponseMessage && (
+                  <div
+                    className={`alert ${
+                      apiResponseMessage.includes('Cannot')
+                        ? 'alert-danger'
+                        : 'alert-success'
+                    }`}
+                  >
+                    {apiResponseMessage}
+                  </div>
+                )}
+
+                {/* If no confirmation, show action buttons */}
+                {!showConfirmation && actionButtons()}
+
+                {/* Confirmation Prompt */}
+                {showConfirmation && confirmationPrompt()}
               </div>
             </div>
           </div>
@@ -539,7 +570,6 @@ const Stock = () => {
           </div>
         </div>
       )}
-
       {/* Update Product Modal */}
       {showUpdateModal && selectedProduct && (
         <div className="modal show fade d-block" tabIndex="-1">
