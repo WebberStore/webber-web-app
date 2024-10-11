@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import loginImg from '../assets/login.jpg'
+import loginImg from '../../assets/login.jpg'
 import { useNavigate } from 'react-router-dom'
-import useAuth from '../hooks/useAuth'
 
 export default function Login() {
   const navigate = useNavigate()
-  const { setAuth } = useAuth()
   const [user, setUser] = useState('')
   const [pwd, setPwd] = useState('')
   const [errMsg, setErrMsg] = useState('')
@@ -19,23 +17,34 @@ export default function Login() {
     e.preventDefault()
 
     try {
+      // Sending the payload with 'username' and 'password'
       const response = await axios.post(
-        'http://localhost:3001/api/v1/auth/login',
-        JSON.stringify({ user, pwd }),
+        'http://localhost:5034/api/user/login',
+        {
+          username: user, // User input as 'username'
+          password: pwd, // Password input as 'password'
+        },
         {
           headers: { 'Content-Type': 'application/json' },
           withCredentials: true,
         }
       )
+
       console.log(JSON.stringify(response?.data))
 
-      const accessToken = response?.data?.accessToken
       const role = response?.data?.role
       console.log(role)
-      setAuth({ user, pwd, role, accessToken })
+
+      // Navigate to different URLs based on role
+      if (role === 'Vendor') {
+        navigate('/vendor/notifications')
+      } else if (role === 'Admin') {
+        navigate('/admin')
+      }
+
+      // Clear form fields after successful login
       setUser('')
       setPwd('')
-      navigate('/admin')
     } catch (err) {
       if (!err?.response) {
         setErrMsg('Server Error')
@@ -72,13 +81,13 @@ export default function Login() {
               Welcome To OrbitArcX
             </h3>
 
-            {/* Username Input */}
+            {/* Email Input */}
             <div className="form-group mb-3">
-              <label className="text-white">Username</label>
+              <label className="text-white">Email</label>
               <input
-                type="text"
+                type="email"
                 className="form-control bg-secondary text-white"
-                id="username"
+                id="user"
                 autoComplete="off"
                 onChange={(e) => setUser(e.target.value)}
                 value={user}

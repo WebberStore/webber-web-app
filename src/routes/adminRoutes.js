@@ -1,6 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
 import Layout from '../pages/Layout'
-import RequireAuth from '../components/login/RequireAuth'
 
 import Users from '../components/Admin/Users'
 

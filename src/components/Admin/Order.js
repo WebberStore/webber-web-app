@@ -1,37 +1,38 @@
 import React, { useState, useEffect } from 'react'
-import { Table, Button, Modal, Pagination, Form, Alert } from 'react-bootstrap'
+import { Table, Button, Modal, Pagination, Form } from 'react-bootstrap'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
 const Order = () => {
+  // state for holding orders and selected order for viewing-----------------------------------------
   const [orders, setOrders] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
-  const [showConfirmModal, setShowConfirmModal] = useState(false) // For confirmation message
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
 
+  // API endpoints--------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
 
+  // retriew all orders-------------------------------------------
   useEffect(() => {
-    // Fetch orders from API
     fetch(`${API_URL}/api/order`)
       .then((response) => response.json())
       .then((data) => setOrders(data))
       .catch((error) => console.error('Error fetching orders:', error))
   }, [])
 
-  // Handle view button click
+  // handle view button click----------------------------------------
   const handleViewClick = (order) => {
     setSelectedOrder(order)
     setShowModal(true)
   }
 
-  // Handle search functionality
+  // filter orders based on search term (by customer name or product names)--------------------------------------------
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase())
   }
 
-  // Filter orders based on search term
   const filteredOrders = orders.filter(
     (order) =>
       order.customer.name.toLowerCase().includes(searchTerm) ||
@@ -41,6 +42,7 @@ const Order = () => {
         .includes(searchTerm)
   )
 
+  // summary calculations for total, delivered, partially delivered, and canceled orders-------------------------------------------------
   const totalOrders = orders.length
   const deliveredOrders = orders.filter(
     (order) => order.status === 'Delivered'
@@ -52,6 +54,7 @@ const Order = () => {
     (order) => order.status === 'Canceled'
   ).length
 
+  // export orders as PDF-------------------------------------------
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.text('Order Report', 14, 16)
@@ -88,23 +91,20 @@ const Order = () => {
     doc.save('orders-report.pdf')
   }
 
-  // Handle order delivery action
+  // show confirmation modal before marking order as delivered----------------------------------------------------------------
   const handleOrderDelivered = () => {
-    // Show confirmation modal before marking the order as delivered
     setShowConfirmModal(true)
   }
 
-  // Confirm order delivery
+  // confirm order delivery action----------------------------------------------------------------
   const confirmOrderDelivered = () => {
-    // Code for updating order to delivered would go here
-    // alert('Order delivered successfully')
     setShowConfirmModal(false)
-    setShowModal(false) // Close the main modal
+    setShowModal(false) // close the main modal after confirming----------------------------------------------------------------
   }
 
   return (
-    <div className="container mt-4 bg-gray-100 h-screen flex justify-center items-center">
-      {/* Summary Cards */}
+    <div className="container mt-4">
+      {/* -----------------------------------------------------summary Cards for orders----------------------------------------------------------- */}
       <div className="row mb-4">
         <div className="col-md-3">
           <div className="card text-center">
@@ -141,8 +141,9 @@ const Order = () => {
       </div>
 
       <h4>Orders</h4>
-      <div className="d-flex justify-content-between">
-        <input
+      {/*------------------------------------------------------------------search bar and download PDF button------------------------------------------------------------------------- */}
+      <div className="d-flex justify-content-between mb-3">
+        <Form.Control
           type="text"
           placeholder="Search orders..."
           className="form-control w-25"
@@ -157,7 +158,8 @@ const Order = () => {
         </Button>
       </div>
 
-      <Table striped bordered hover className="mt-3">
+      {/* --------------------------------------------------------orders table------------------------------------------------------------------------ */}
+      <Table striped bordered hover>
         <thead>
           <tr>
             <th>No</th>
@@ -210,7 +212,7 @@ const Order = () => {
         </tbody>
       </Table>
 
-      {/* Pagination (Assuming showing 10 per page) */}
+      {/* -----------------------------------pagination -showing 10 per page---------------------------------------- */}
       <Pagination className="justify-content-center">
         <Pagination.Prev />
         <Pagination.Item active>{1}</Pagination.Item>
@@ -218,7 +220,7 @@ const Order = () => {
         <Pagination.Next />
       </Pagination>
 
-      {/* Modal for viewing detailed order */}
+      {/* -------------------------------------------modal for viewing detailed order----------------------------------------------- */}
       {selectedOrder && (
         <Modal
           show={showModal}
@@ -231,17 +233,17 @@ const Order = () => {
               ORDER DETAILS
               <p style={{ fontSize: '16px', color: '#555', marginTop: '10px' }}>
                 <strong>Order ID:</strong> {selectedOrder.id}&nbsp;&nbsp;
-                <br></br>
+                <br />
                 <strong>Customer Name:</strong> {selectedOrder.customer.name}
-                <br></br>
+                <br />
                 <strong>Grand Total:</strong> Rs.{selectedOrder.orderPrice}.00
-                <br></br>
+                <br />
                 <strong>Order Status:</strong> {selectedOrder.status}
-                &nbsp;&nbsp;
               </p>
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {/* -------------------------------------detailed order items table------------------------------------ */}
             <Table striped bordered hover>
               <thead>
                 <tr>
@@ -269,7 +271,7 @@ const Order = () => {
                       />
                     </td>
                     <td>{item.product.name}</td>
-                    <td>{item.product.price}</td>
+                    <td>Rs.{item.product.price}</td>
                     <td>{item.quantity}</td>
                     <td>{item.product.vendor.name}</td>
                     <td>Rs.{item.totalPrice}.00</td>
@@ -295,7 +297,7 @@ const Order = () => {
         </Modal>
       )}
 
-      {/* Confirmation Modal for Order Delivered */}
+      {/* ----------------------------------------confirmation Modal for order delivered---------------------------------------------- */}
       <Modal
         show={showConfirmModal}
         onHide={() => setShowConfirmModal(false)}

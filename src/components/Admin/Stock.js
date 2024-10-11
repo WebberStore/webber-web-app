@@ -12,11 +12,15 @@ const Stock = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage] = useState(5)
   const [selectedProduct, setSelectedProduct] = useState(null)
-  const [showModal, setShowModal] = useState(false) // For action modal (Update/Delete)
-  const [showUpdateModal, setShowUpdateModal] = useState(false) // For update form modal
+  // modal (Update/Delete)---------------------------------------------------------------
+  const [showModal, setShowModal] = useState(false)
+
+  const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [showAddProduct, setShowAddProduct] = useState(false)
-  const [pendingAction, setPendingAction] = useState(null) // Store action type (Update/Delete)
+  // store action type (Update/Delete)---------------------------------------------------
+  const [pendingAction, setPendingAction] = useState(null)
+
   const [searchTerm, setSearchTerm] = useState('')
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -24,18 +28,22 @@ const Stock = () => {
     price: '',
     stock: '',
     categoryId: '',
-    vendorId: '66fabea22165a016474e7a6e', // Hardcoded vendor ID
+    vendorId: '66fabea22165a016474e7a6e',
   })
-  const [imageFile, setImageFile] = useState(null) // For storing the image file
 
+  // for storing the image file---------------------------------------
+  const [imageFile, setImageFile] = useState(null)
+
+  // API endpoint------------------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
 
-  // Fetch products and categories from API on component mount
+  // fetch products and categories from API on component mount----------------------------------------------------
   useEffect(() => {
     getProducts()
     getCategories()
   }, [])
 
+  // retriew all products----------------------------------------------------------
   const getProducts = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/products`)
@@ -47,6 +55,7 @@ const Stock = () => {
     }
   }
 
+  // retriew all categories----------------------------------------------------------
   const getCategories = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/products/category`)
@@ -56,11 +65,13 @@ const Stock = () => {
     }
   }
 
+  // fuction to calulate the low stock-------------------------------------------------
   const calculateLowStockCount = (products) => {
     const count = products.filter((product) => product.stock < 10).length
     setLowStockCount(count)
   }
 
+  // calculate total stock worth---------------------------------------------------------
   const calculateTotalStockValue = (products) => {
     const totalValue = products.reduce(
       (acc, product) => acc + product.stock * product.price,
@@ -69,24 +80,24 @@ const Stock = () => {
     setTotalStockValue(totalValue)
   }
 
-  // Handle form input changes for new and update forms
+  // handle form input changes for new and update forms---------------------------------------
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setNewProduct((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle form input changes for updating products
+  // handle form input changes for updating products----------------------------------------------------------------
   const handleUpdateInputChange = (e) => {
     const { name, value } = e.target
     setSelectedProduct((prev) => ({ ...prev, [name]: value }))
   }
 
-  // Handle image file selection
+  // handle image file selection----------------------------------------------------------------
   const handleImageChange = (e) => {
-    setImageFile(e.target.files[0]) // Store the selected file in state
+    setImageFile(e.target.files[0])
   }
 
-  // Create a new product
+  // create a new product----------------------------------------------------------------
   const createProduct = async (e) => {
     e.preventDefault()
 
@@ -97,7 +108,8 @@ const Stock = () => {
     formData.append('stock', newProduct.stock)
     formData.append('categoryId', newProduct.categoryId)
     formData.append('vendorId', newProduct.vendorId)
-    formData.append('imageFile', imageFile) // Append the selected image file
+    // append the selected image file------------------------------------------
+    formData.append('imageFile', imageFile)
 
     try {
       await axios.post(`${API_URL}/api/products`, formData, {
@@ -105,7 +117,8 @@ const Stock = () => {
           'Content-Type': 'multipart/form-data',
         },
       })
-      getProducts() // Refresh product list after creation
+      // refresh product list after creation------------------------------------------
+      getProducts()
       setShowAddProduct(false)
       alert('Product added successfully!')
     } catch (error) {
@@ -113,7 +126,7 @@ const Stock = () => {
     }
   }
 
-  // Update a product (with or without updating the image)
+  // update a product -----------------------------------------
   const handleUpdate = async (e) => {
     e.preventDefault()
 
@@ -125,7 +138,7 @@ const Stock = () => {
     formData.append('categoryId', selectedProduct.category.id)
     formData.append('vendorId', selectedProduct.vendor.id)
 
-    // If a new image is selected, append it to the form data
+    // if a new image is selected, append it to the form data----------------------------------------------------------------
     if (imageFile) {
       formData.append('imageFile', imageFile)
     }
@@ -140,20 +153,20 @@ const Stock = () => {
           },
         }
       )
-      getProducts() // Refresh product list after update
-      setShowUpdateModal(false) // Close the update modal
-      setShowModal(false) // Close the action modal
+      getProducts()
+      setShowUpdateModal(false)
+      setShowModal(false)
       alert('Product updated successfully!')
     } catch (error) {
       console.error('Error updating product:', error)
     }
   }
 
-  // Delete a product
+  // delete a product-----------------------------------------------------------
   const handleDelete = async () => {
     try {
       await axios.delete(`${API_URL}/api/products/${selectedProduct.id}`)
-      getProducts() // Refresh product list after deletion
+      getProducts()
       setShowModal(false)
       setShowConfirmation(false)
     } catch (error) {
@@ -161,19 +174,18 @@ const Stock = () => {
     }
   }
 
-  // Open action modal and set selected product
   const handleActionClick = (product) => {
     setSelectedProduct(product)
-    setShowModal(true) // Show action modal
+    setShowModal(true)
   }
 
-  // Open update modal after selecting update action
+  // open update modal after selecting update action----------------------------------------------------------------
   const handleUpdateAction = () => {
-    setShowModal(false) // Close action modal
-    setShowUpdateModal(true) // Open update form modal
+    setShowModal(false)
+    setShowUpdateModal(true)
   }
 
-  // Pagination calculation
+  // pagination calculation----------------------------------------------------------------
   const indexOfLastRow = currentPage * rowsPerPage
   const indexOfFirstRow = indexOfLastRow - rowsPerPage
   const currentRows = data
@@ -200,20 +212,20 @@ const Stock = () => {
 
   const getRowColor = (stock) => {
     if (stock < 5) {
-      return 'bg-danger text-white' // Red for stock < 5
+      // red for stock < 5-------------------------------------
+      return 'bg-danger text-white'
     } else if (stock >= 5 && stock < 10) {
-      return 'bg-warning text-dark' // Yellow for stock between 5 and 10
+      // yellow for stock between 5 and 10-----------------------------------
+      return 'bg-warning text-dark'
     } else {
-      return '' // No specific class for stock >= 10 (default color)
+      // stock >= 10 - default color------------------------------------
+      return ''
     }
   }
 
   const actionButtons = () => (
     <div className="d-flex justify-content-around">
-      <button
-        className="btn btn-primary"
-        onClick={handleUpdateAction} // Open update modal
-      >
+      <button className="btn btn-primary" onClick={handleUpdateAction}>
         Update
       </button>
       <button
@@ -236,7 +248,7 @@ const Stock = () => {
             Are you sure you want to delete this product?
           </p>
           <button className="btn btn-danger me-2" onClick={handleDelete}>
-            Yes, Delete
+            Yes, Delete.
           </button>
           <button
             className="btn btn-secondary"
@@ -251,7 +263,7 @@ const Stock = () => {
 
   return (
     <div className="container" style={{ backgroundColor: '#fff' }}>
-      {/* Summary Cards */}
+      {/* -------------------------------------------------summary Cards-------------------------------------------------------- */}
       <div className="row mb-4">
         <div className="col-md-3">
           <div className="card text-center">
@@ -287,7 +299,6 @@ const Stock = () => {
         </div>
       </div>
 
-      {/* Search Input and Buttons */}
       <div className="row mb-3">
         <div className="col-md-8">
           <input
@@ -311,7 +322,7 @@ const Stock = () => {
         </div>
       </div>
 
-      {/* Data Table */}
+      {/* --------------------------------------------data table------------------------------------------- */}
       <div className="table-responsive">
         <table className="table table-bordered">
           <thead>
@@ -358,7 +369,7 @@ const Stock = () => {
                 <td>
                   <button
                     className="btn btn-primary"
-                    onClick={() => handleActionClick(product)} // Open action modal
+                    onClick={() => handleActionClick(product)}
                   >
                     Action
                   </button>
@@ -369,7 +380,7 @@ const Stock = () => {
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* -----------------------------------------------------pagination------------------------------------------------------ */}
       <div className="d-flex justify-content-between mt-4">
         <button
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -394,7 +405,7 @@ const Stock = () => {
         </button>
       </div>
 
-      {/* Action Modal */}
+      {/* -------------------------------------------------------------modal------------------------------------------------------------- */}
       {showModal && selectedProduct && (
         <div className="modal show fade d-block" tabIndex="-1">
           <div className="modal-dialog">
@@ -417,7 +428,7 @@ const Stock = () => {
         </div>
       )}
 
-      {/* Add Product Modal */}
+      {/* ----------------------------------------------------------add product modal-------------------------------------------- */}
       {showAddProduct && (
         <div className="modal show fade d-block" tabIndex="-1">
           <div className="modal-dialog">
@@ -499,11 +510,13 @@ const Stock = () => {
 
                   <div className="mb-3">
                     <label className="form-label">Upload Image</label>
+
                     <input
                       type="file"
                       className="form-control"
                       accept="image/*"
-                      onChange={handleImageChange} // Handle image selection
+                      // handle image selection------------------------------
+                      onChange={handleImageChange}
                       required
                     />
                   </div>
@@ -527,7 +540,7 @@ const Stock = () => {
         </div>
       )}
 
-      {/* Update Product Modal */}
+      {/* ----------------------------------------------------update product modal---------------------------------------------------- */}
       {showUpdateModal && selectedProduct && (
         <div className="modal show fade d-block" tabIndex="-1">
           <div className="modal-dialog">
@@ -542,7 +555,7 @@ const Stock = () => {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleUpdate}>
-                  {/* Update Product Form */}
+                  {/* ---------------------------------------------------------update product form---------------------------------------------------------- */}
                   <div className="mb-3">
                     <label className="form-label">Product Name</label>
                     <input
@@ -610,7 +623,7 @@ const Stock = () => {
                       type="file"
                       className="form-control"
                       accept="image/*"
-                      onChange={handleImageChange} // Handle new image selection if necessary
+                      onChange={handleImageChange}
                     />
                   </div>
 

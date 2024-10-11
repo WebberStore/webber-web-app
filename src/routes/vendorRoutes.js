@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import Navbar from '../components/navbar'
 import Stock from '../components/Vendor/Stock'
 import Orders from '../components/Vendor/Orders'
 import Notifications from '../components/Vendor/Notifications'

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 export default function Customers() {
   const [customers, setCustomers] = useState([])
 
   const API_URL = process.env.REACT_APP_API_URL
 
-  // Fetch all customers from the API
+  // retriew all cutomer details----------------------------------------------------------------
   useEffect(() => {
     getCustomers()
   }, [])

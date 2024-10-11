@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react'
 import * as XLSX from 'xlsx'
 import axios from 'axios'
 import { Modal, Button } from 'react-bootstrap'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 export default function Users() {
+  // states to hold users, modals, and form data-----------------------------------------
   const [users, setUsers] = useState([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
@@ -12,6 +14,8 @@ export default function Users() {
   const [isUpdateSuccessOpen, setIsUpdateSuccessOpen] = useState(false)
   const [isDeleteSuccessOpen, setIsDeleteSuccessOpen] = useState(false)
   const [selectedVendor, setSelectedVendor] = useState(null)
+
+  // new user form state----------------------------------------------------------------
   const [newUser, setNewUser] = useState({
     email: '',
     name: '',
@@ -19,13 +23,15 @@ export default function Users() {
     role: 'Vendor',
   })
 
+  // API endpoint----------------------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
 
-  // Fetch all vendors from the API
+  // fetch all vendors on component load----------------------------------------------------------------
   useEffect(() => {
     getUsers()
   }, [])
 
+  // retriew all users based on the role= vendors----------------------------------------------------------------------
   const getUsers = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/user`)
@@ -36,21 +42,25 @@ export default function Users() {
     }
   }
 
+  // handle form input changes for new user--------------------------------------------------------------
   const handleChange = (e) => {
     const { name, value } = e.target
     setNewUser((prev) => ({ ...prev, [name]: value }))
   }
 
+  // handle input changes for the selected vendor----------------------------------------------------------------
   const handleUpdateChange = (e) => {
     const { name, value } = e.target
     setSelectedVendor((prev) => ({ ...prev, [name]: value }))
   }
 
+  // add new vendor------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/api/user`, newUser)
+      await axios.post(`${API_URL}/api/user`, newUser)
       setIsSuccessModalOpen(true)
+      // refresh vendor list-----------------------------------
       getUsers()
       setIsModalOpen(false)
     } catch (error) {
@@ -58,11 +68,12 @@ export default function Users() {
     }
   }
 
+  // updating vendor details--------------------------------------------------
   const handleUpdateVendor = async (e) => {
     e.preventDefault()
     try {
       await axios.put(
-        `${process.env.REACT_APP_API_URL}/api/user/${selectedVendor.id}`,
+        `${API_URL}/api/user/${selectedVendor.id}`,
         selectedVendor
       )
       getUsers()
@@ -73,9 +84,10 @@ export default function Users() {
     }
   }
 
+  // vendor delete call-----------------------------------------------------------------
   const deleteUser = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_API_URL}/api/user/${id}`)
+      await axios.delete(`${API_URL}/api/user/${id}`)
       getUsers()
       setIsDeleteModalOpen(false)
       setIsDeleteSuccessOpen(true)
@@ -84,6 +96,7 @@ export default function Users() {
     }
   }
 
+  // export vendors to the excel file----------------------------------------------------------------
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(users)
     const wb = XLSX.utils.book_new()
@@ -91,6 +104,7 @@ export default function Users() {
     XLSX.writeFile(wb, 'Users.xlsx')
   }
 
+  // model for adding new vendor--------------------------------------------------------------------------
   const renderModal = () => (
     <Modal show={isModalOpen} onHide={() => setIsModalOpen(false)}>
       <Modal.Header closeButton>
@@ -141,6 +155,7 @@ export default function Users() {
     </Modal>
   )
 
+  // model for updating vendor details------------------------------------------------------------------
   const renderUpdateModal = () => (
     <Modal show={isUpdateModalOpen} onHide={() => setIsUpdateModalOpen(false)}>
       <Modal.Header closeButton>
@@ -191,6 +206,7 @@ export default function Users() {
     </Modal>
   )
 
+  // confirmation before deleting-----------------------------------------------------------
   const renderDeleteModal = () => (
     <Modal show={isDeleteModalOpen} onHide={() => setIsDeleteModalOpen(false)}>
       <Modal.Header closeButton>
@@ -203,13 +219,14 @@ export default function Users() {
             onClick={() => deleteUser(selectedVendor.id)}
             className="btn btn-danger"
           >
-            Yes, Delete
+            Yes, Delete.
           </Button>
         </div>
       </Modal.Body>
     </Modal>
   )
 
+  // success message----------------------------------------------------------
   const renderSuccessModal = () => (
     <Modal
       show={isSuccessModalOpen}
@@ -224,6 +241,7 @@ export default function Users() {
     </Modal>
   )
 
+  // success message - update-----------------------------------------------------
   const renderUpdateSuccessModal = () => (
     <Modal
       show={isUpdateSuccessOpen}
@@ -238,6 +256,7 @@ export default function Users() {
     </Modal>
   )
 
+  // delete sucess message-----------------------------------------------------
   const renderDeleteSuccessModal = () => (
     <Modal
       show={isDeleteSuccessOpen}
@@ -263,12 +282,14 @@ export default function Users() {
           >
             Add New Vendor
           </Button>
+
           <Button onClick={exportToExcel} className="btn btn-primary">
             Export
           </Button>
         </div>
       </div>
 
+      {/* ----------------------------------------------------modals based on state----------------------------------------- */}
       {isModalOpen && renderModal()}
       {isUpdateModalOpen && renderUpdateModal()}
       {isDeleteModalOpen && renderDeleteModal()}
@@ -276,6 +297,7 @@ export default function Users() {
       {isUpdateSuccessOpen && renderUpdateSuccessModal()}
       {isDeleteSuccessOpen && renderDeleteSuccessModal()}
 
+      {/* --------------------------------------datatable to display vendors---------------------------------------- */}
       <table className="table table-bordered">
         <thead>
           <tr>
@@ -290,13 +312,13 @@ export default function Users() {
         <tbody>
           {users.map((user, index) => (
             <tr key={user.id}>
-              <td>{index}</td>
+              <td>{index + 1}</td>
               <td>{user.email}</td>
               <td>{user.name}</td>
               <td>{user.role}</td>
               <td>{user.rating}</td>
               <td>
-                <button
+                <Button
                   onClick={() => {
                     setSelectedVendor(user)
                     setIsUpdateModalOpen(true)
@@ -304,8 +326,8 @@ export default function Users() {
                   className="btn btn-primary me-2"
                 >
                   Update
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => {
                     setSelectedVendor(user)
                     setIsDeleteModalOpen(true)
@@ -313,7 +335,7 @@ export default function Users() {
                   className="btn btn-danger"
                 >
                   Delete
-                </button>
+                </Button>
               </td>
             </tr>
           ))}
