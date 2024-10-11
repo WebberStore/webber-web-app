@@ -17,7 +17,7 @@ const Dashboard = () => {
 
   // API enpoints---------------------------------------------------------------------
   const API_URL = 'http://localhost:5034'
-  const adminId = '66ff8c9c0b1184beaab85709'
+  const adminId = localStorage.getItem('adminid')
 
   // retriew all orders data----------------------------------------------------------------
   useEffect(() => {

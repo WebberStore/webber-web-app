@@ -26,12 +26,12 @@ const Stock = () => {
     price: '',
     stock: '',
     categoryId: '',
-    vendorId: '66fabea22165a016474e7a6e', // Hardcoded vendor ID
+    vendorId: localStorage.getItem('vendorid'), // Hardcoded vendor ID
   })
   const [imageFile, setImageFile] = useState(null) // For storing the image file
 
   const API_URL = process.env.REACT_APP_API_URL
-  const vendorId = '66fabea22165a016474e7a6e'
+  const vendorId = localStorage.getItem('vendorid')
 
   // Fetch products and categories from API on component mount
   useEffect(() => {

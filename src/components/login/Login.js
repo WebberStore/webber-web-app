@@ -9,6 +9,8 @@ export default function Login() {
   const [pwd, setPwd] = useState('')
   const [errMsg, setErrMsg] = useState('')
 
+  const API_URL = process.env.REACT_APP_API_URL
+
   useEffect(() => {
     setErrMsg('')
   }, [user, pwd])
@@ -17,32 +19,34 @@ export default function Login() {
     e.preventDefault()
 
     try {
-      // Sending the payload with 'username' and 'password'
       const response = await axios.post(
-        'http://localhost:5034/api/user/login',
+        `${API_URL}/api/user/login`,
         {
-          username: user, // User input as 'username'
-          password: pwd, // Password input as 'password'
+          username: user,
+          password: pwd,
         },
         {
           headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
         }
       )
 
-      console.log(JSON.stringify(response?.data))
+      const { id, role } = response?.data
+      console.log(id) // Capture user id from response
+      console.log(role) // Capture user role
 
-      const role = response?.data?.role
-      console.log(role)
-
-      // Navigate to different URLs based on role
+      // Store the user ID in local storage based on the role
       if (role === 'Vendor') {
+        localStorage.setItem('vendorid', id)
         navigate('/vendor/notifications')
       } else if (role === 'Admin') {
+        localStorage.setItem('adminid', id)
         navigate('/admin')
+      } else if (role === 'CSR') {
+        localStorage.setItem('csrid', id)
+        navigate('/csr/order')
       }
 
-      // Clear form fields after successful login
+      // Clear form fields after login
       setUser('')
       setPwd('')
     } catch (err) {

@@ -1,9 +1,6 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import {
-  DASHBOARD_SIDEBAR_BOTTOM_LINKS,
-  DASHBOARD_SIDEBAR_LINKS,
-} from './navigation'
+import { DASHBOARD_SIDEBAR_LINKS } from './navigation'
 const Sidebar = () => {
   const { pathname } = useLocation() // Get the current route
 

@@ -1,9 +1,19 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { DASHBOARD_SIDEBAR_LINKS } from './navigation'
+
 const Sidebar = () => {
-  // get the current route----------------------------------------
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+
+  // handle logout--------------------------------------------------
+  const handleLogout = () => {
+    // remove user id from localStorage-----------------------------------------
+    localStorage.removeItem('adminid')
+
+    // redirect to login page----------------------------------------------------
+    navigate('/login')
+  }
 
   return (
     <div
@@ -15,21 +25,22 @@ const Sidebar = () => {
         <span className="fs-5 text-white">OrbitArcX-</span>Administrator
       </div>
 
-      {/* -------------------------------------------links------------------------------------------------- */}
+      {/* ----------------------------------------------------------sidebar links------------------------------------------------------------ */}
       <div className="flex-grow-1 py-2 d-flex flex-column gap-1">
         {DASHBOARD_SIDEBAR_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} pathname={pathname} />
         ))}
       </div>
 
+      {/* -----------------------------------------------------------------------logout button-------------------------------------------------------- */}
       <div className="d-flex flex-column gap-1 pt-2 border-top border-secondary">
-        <Link
-          to="/login"
-          className="text-danger text-decoration-none d-flex align-items-center gap-2 px-3 py-2"
+        <button
+          onClick={handleLogout}
+          className="text-danger text-decoration-none d-flex align-items-center gap-2 px-3 py-2 bg-transparent border-0"
         >
           <i className="bi bi-box-arrow-right"></i>
           Log Out
-        </Link>
+        </button>
       </div>
     </div>
   )

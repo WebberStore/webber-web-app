@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 const Stock = () => {
   const [data, setData] = useState([])
   const [categories, setCategories] = useState([])
+  const [vendors, setVendors] = useState([])
   const [lowStockCount, setLowStockCount] = useState(0)
   const [totalStockValue, setTotalStockValue] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
@@ -14,13 +15,13 @@ const Stock = () => {
   const [selectedProduct, setSelectedProduct] = useState(null)
   // modal (Update/Delete)---------------------------------------------------------------
   const [showModal, setShowModal] = useState(false)
-
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [showAddProduct, setShowAddProduct] = useState(false)
+
   // store action type (Update/Delete)---------------------------------------------------
   const [pendingAction, setPendingAction] = useState(null)
-
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -28,7 +29,7 @@ const Stock = () => {
     price: '',
     stock: '',
     categoryId: '',
-    vendorId: '66fabea22165a016474e7a6e',
+    vendorId: '',
   })
 
   // for storing the image file---------------------------------------
@@ -41,6 +42,7 @@ const Stock = () => {
   useEffect(() => {
     getProducts()
     getCategories()
+    getVendors()
   }, [])
 
   // retriew all products----------------------------------------------------------
@@ -52,6 +54,16 @@ const Stock = () => {
       calculateTotalStockValue(response.data)
     } catch (error) {
       console.error('Error fetching products:', error)
+    }
+  }
+
+  // Fetch all vendors
+  const getVendors = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/user/role/Vendor`)
+      setVendors(response.data)
+    } catch (error) {
+      console.error('Error fetching vendors:', error)
     }
   }
 
@@ -120,7 +132,7 @@ const Stock = () => {
       // refresh product list after creation------------------------------------------
       getProducts()
       setShowAddProduct(false)
-      alert('Product added successfully!')
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Error creating product:', error)
     }
@@ -156,7 +168,7 @@ const Stock = () => {
       getProducts()
       setShowUpdateModal(false)
       setShowModal(false)
-      alert('Product updated successfully!')
+      setShowSuccessModal(true)
     } catch (error) {
       console.error('Error updating product:', error)
     }
@@ -509,6 +521,24 @@ const Stock = () => {
                   </div>
 
                   <div className="mb-3">
+                    <label className="form-label">Vendor</label>
+                    <select
+                      className="form-control"
+                      name="vendorId"
+                      value={newProduct.vendorId}
+                      onChange={handleInputChange}
+                      required
+                    >
+                      <option value="">Select Vendor</option>
+                      {vendors.map((vendor) => (
+                        <option key={vendor.id} value={vendor.id}>
+                          {vendor.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mb-3">
                     <label className="form-label">Upload Image</label>
 
                     <input
@@ -534,6 +564,36 @@ const Stock = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------------------------------------------------success modal-------------------------------------------------- */}
+      {showSuccessModal && (
+        <div className="modal show fade d-block" tabIndex="-1">
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Success</h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setShowSuccessModal(false)}
+                ></button>
+              </div>
+              <div className="modal-body">
+                <p>Product added successfully!</p>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setShowSuccessModal(false)}
+                >
+                  OK
+                </button>
               </div>
             </div>
           </div>
