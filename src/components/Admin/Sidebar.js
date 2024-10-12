@@ -22,7 +22,7 @@ const Sidebar = () => {
     >
       <div className="d-flex align-items-center gap-2 px-1 py-3">
         <i className="bi bi-globe fs-4 text-primary"></i>
-        <span className="fs-5 text-white">OrbitArcX-</span>Administrator
+        <span className="fs-5 text-white">Webber-</span>Administrator
       </div>
 
       {/* ----------------------------------------------------------sidebar links------------------------------------------------------------ */}

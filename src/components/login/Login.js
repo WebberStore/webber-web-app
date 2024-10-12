@@ -82,7 +82,7 @@ export default function Login() {
             )}
             <h2 className="text-center text-white mb-4">SIGN IN</h2>
             <h3 className="text-center text-white mb-4">
-              Welcome To OrbitArcX
+              Welcome To Webber
             </h3>
 
             {/* Email Input */}
