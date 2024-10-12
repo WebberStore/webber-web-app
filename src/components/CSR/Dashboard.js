@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Table, Button, Modal, Pagination } from 'react-bootstrap'
+import { Table, Button, Modal, Tabs, Tab, Pagination } from 'react-bootstrap'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -11,16 +11,16 @@ const Dashboard = () => {
   const [categoriesCount, setCategoriesCount] = useState(0)
   const [productsCount, setProductsCount] = useState(0)
   const [notifications, setNotifications] = useState([])
-
-  const [showNotificationModal, setShowNotificationModal] = useState(false)
   const [selectedNotification, setSelectedNotification] = useState(null)
+  const [showNotificationModal, setShowNotificationModal] = useState(false)
+  const [key, setKey] = useState('unseen')
+  const [currentTabNotifications, setCurrentTabNotifications] = useState([])
 
-  // API enpoints---------------------------------------------------------------------
+  // API endpoints---------------------------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
+  const csrID = localStorage.getItem('csrid')
 
-  const adminId = localStorage.getItem('csrid')
-
-  // retriew all orders data----------------------------------------------------------------
+  // Retrieve all orders data----------------------------------------------------------------
   useEffect(() => {
     fetch(`${API_URL}/api/order`)
       .then((response) => response.json())
@@ -57,11 +57,19 @@ const Dashboard = () => {
 
   // Fetch notifications---------------------
   useEffect(() => {
-    fetch(`${API_URL}/api/notification/user/${adminId}`)
+    fetch(`${API_URL}/api/notification/user/${csrID}`)
       .then((response) => response.json())
       .then((data) => setNotifications(data))
       .catch((error) => console.error('Error fetching notifications:', error))
   }, [])
+
+  // Filter notifications based on the selected tab------------------------------------------------
+  useEffect(() => {
+    const filtered = notifications.filter(
+      (notification) => notification.seenStatus === (key === 'seen')
+    )
+    setCurrentTabNotifications(filtered)
+  }, [key, notifications])
 
   // Summary calculations-------------------------------------
   const totalOrders = orders.length
@@ -72,13 +80,29 @@ const Dashboard = () => {
     (order) => order.status === 'Partial_Delivered'
   ).length
   const canceledOrders = orders.filter(
-    (order) => order.status === 'Canceled'
+    (order) => order.status === 'Cancelled'
   ).length
 
   // Handling View Notification button click----------------------------------------------------------------
   const handleViewNotification = (notification) => {
     setSelectedNotification(notification)
     setShowNotificationModal(true)
+
+    // Only update the seen status if the notification is unseen--------------------------------
+    if (!notification.seenStatus) {
+      fetch(
+        `${API_URL}/api/notification/seen/${notification.id}?seenStatus=true`,
+        { method: 'PUT' }
+      )
+        .then((response) => response.json())
+        .then((updatedNotification) => {
+          const updatedNotifications = notifications.map((n) =>
+            n.id === notification.id ? { ...n, seenStatus: true } : n
+          )
+          setNotifications(updatedNotifications)
+        })
+        .catch((error) => console.error('Error updating seen status:', error))
+    }
   }
 
   return (
@@ -152,8 +176,14 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ------------------------------------------------------Notifications Table------------------------------------------------------------ */}
+      {/* ------------------------------------------------------Notifications Tabs------------------------------------------------------------ */}
       <h4>Notifications</h4>
+      <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
+        <Tab eventKey="unseen" title="Unseen" />
+        <Tab eventKey="seen" title="Seen" />
+      </Tabs>
+
+      {/* ------------------------------------------------------------Notifications Table------------------------------------------------------------ */}
       <Table striped bordered hover className="mt-3">
         <thead>
           <tr>
@@ -164,8 +194,8 @@ const Dashboard = () => {
           </tr>
         </thead>
         <tbody>
-          {notifications
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort notification by date-------------------------------
+          {currentTabNotifications
+            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Sort notifications by date-------------------------------
             .map((notification, index) => (
               <tr key={notification.id}>
                 <td>{index + 1}</td>
@@ -184,14 +214,6 @@ const Dashboard = () => {
             ))}
         </tbody>
       </Table>
-
-      {/* -----------------------Pagination---------------------------- */}
-      <Pagination className="justify-content-center">
-        <Pagination.Prev />
-        <Pagination.Item active>{1}</Pagination.Item>
-        <Pagination.Item>{2}</Pagination.Item>
-        <Pagination.Next />
-      </Pagination>
 
       {/* Modal for Viewing Notification Details */}
       {selectedNotification && (

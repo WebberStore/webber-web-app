@@ -24,4 +24,10 @@ export const DASHBOARD_SIDEBAR_LINKS = [
     path: '/vendor/userProfile',
     icon: 'bi-person',
   },
+  {
+    key: 'comments',
+    label: 'Comments',
+    path: '/vendor/comments',
+    icon: 'bi-person',
+  },
 ]

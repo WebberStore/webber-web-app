@@ -7,6 +7,7 @@ const Order = () => {
   const [orders, setOrders] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
+  const [successMessage, setSuccessMessage] = useState('')
   // confirmation message----------------------------------------------------------
   const [showConfirmModal, setShowConfirmModal] = useState(false)
 
@@ -86,10 +87,34 @@ const Order = () => {
     setShowConfirmModal(true)
   }
 
-  // confirm order delivery----------------------------------------------------------------
+  // confirm order delivery action----------------------------------------------------------------
   const confirmOrderDelivered = () => {
-    setShowConfirmModal(false)
-    setShowModal(false)
+    // call the API to update the order status to 'Delivered'----------------------------------------------------------------
+    fetch(`${API_URL}/api/order/status/${selectedOrder.id}?status=Delivered`, {
+      method: 'PUT',
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const updatedOrders = orders.map((order) =>
+          order.id === selectedOrder.id
+            ? { ...order, status: 'Delivered' }
+            : order
+        )
+        setOrders(updatedOrders)
+
+        // show success message-----------------------------------------------
+        setSuccessMessage('Order has been marked as delivered successfully!')
+
+        // hide both the confirmation modal and the detailed order modal---------------------------------------------
+        setShowConfirmModal(false)
+        setShowModal(false)
+
+        // hide the success message after 3 seconds------------------------------------
+        setTimeout(() => {
+          setSuccessMessage('')
+        }, 3000)
+      })
+      .catch((error) => console.error('Error updating order status:', error))
   }
 
   return (

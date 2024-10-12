@@ -52,7 +52,7 @@ const Order = () => {
     (order) => order.status === 'Partial_Delivered'
   ).length
   const canceledOrders = orders.filter(
-    (order) => order.status === 'Canceled'
+    (order) => order.status === 'Cancelled'
   ).length
 
   // export orders as PDF-------------------------------------------

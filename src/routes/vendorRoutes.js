@@ -4,6 +4,7 @@ import Orders from '../components/Vendor/Orders'
 import Notifications from '../components/Vendor/Notifications'
 import UserProfile from '../components/Vendor/UserProfile'
 import Layout from '../pages/LayoutVendor'
+import Comments from '../components/Vendor/Comments'
 
 const vendorRoutes = () => {
   return (
@@ -14,6 +15,7 @@ const vendorRoutes = () => {
           <Route path="/vendor/orders" element={<Orders />} />
           <Route path="/vendor/notifications" element={<Notifications />} />
           <Route path="/vendor/userProfile" element={<UserProfile />} />
+          <Route path="/vendor/comments" element={<Comments />} />
         </Route>
       </Routes>
     </div>

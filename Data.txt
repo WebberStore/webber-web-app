@@ -1,0 +1,12 @@
+Vendor:
+shaunsoysa@vendor.com
+password123
+
+CSR
+johnsmith@csr.com
+password123
+
+
+Admin
+dinukakariyawasam@admin.com
+password123
