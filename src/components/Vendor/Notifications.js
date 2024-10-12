@@ -69,7 +69,7 @@ const Notifications = () => {
         <h3>Notifications</h3>
         {rating !== null && (
           <div className="rating-box">
-            Rating - <strong>{rating}</strong>
+            Rating : <strong>{rating}</strong>
           </div>
         )}
       </div>

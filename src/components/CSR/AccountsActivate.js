@@ -42,10 +42,14 @@ const AccountsActivate = () => {
   // handle the status change----------------------------------------------------------------
   const handleStatusChange = async () => {
     if (selectedUser) {
-      const updatedUser = {
-        ...selectedUser,
-        // update the approvestatus based on the--------------------------------
-        approveStatus: confirmAction,
+      let updatedUser = { ...selectedUser }
+
+      if (activeTab === 'UnApproved') {
+        // update only the approveStatus for UnApproved tab----------------------------
+        updatedUser.approveStatus = true
+      } else {
+        // update the status for other tabs-----------------------------------------------
+        updatedUser.status = confirmAction
       }
 
       try {
@@ -56,6 +60,7 @@ const AccountsActivate = () => {
         getUsers()
         setShowConfirmation(false)
         setSelectedUser(null)
+        //alert('Account update successful!')
       } catch (error) {
         console.error('Error updating user status:', error)
       }
@@ -70,8 +75,9 @@ const AccountsActivate = () => {
   // filter users based on the selected tab--------------------------------------------------
   const filteredData = data.filter((user) => {
     if (activeTab === 'All') return true
-    if (activeTab === 'Active') return user.approveStatus === true
-    if (activeTab === 'Deactivate') return user.approveStatus === false
+    if (activeTab === 'Active') return user.status === true
+    if (activeTab === 'Deactivate') return user.status === false
+    if (activeTab === 'UnApproved') return user.approveStatus === false
     return true
   })
 
@@ -87,7 +93,7 @@ const AccountsActivate = () => {
     <Container>
       {/* -----------------------------------------------summary cards------------------------------------------------------- */}
       <Row className="mb-4">
-        <Col md={4}>
+        <Col md={3}>
           <Card>
             <Card.Body className="d-flex align-items-center">
               <div className="me-3">
@@ -104,7 +110,7 @@ const AccountsActivate = () => {
           </Card>
         </Col>
 
-        <Col md={4}>
+        <Col md={3}>
           <Card>
             <Card.Body className="d-flex align-items-center">
               <div className="me-3">
@@ -116,14 +122,14 @@ const AccountsActivate = () => {
               <div>
                 <Card.Title>Active Customers</Card.Title>
                 <Card.Text className="h2">
-                  {data.filter((user) => user.approveStatus === true).length}
+                  {data.filter((user) => user.status === true).length}
                 </Card.Text>
               </div>
             </Card.Body>
           </Card>
         </Col>
 
-        <Col md={4}>
+        <Col md={3}>
           <Card>
             <Card.Body className="d-flex align-items-center">
               <div className="me-3">
@@ -134,6 +140,25 @@ const AccountsActivate = () => {
               </div>
               <div>
                 <Card.Title>Deactivated Customers</Card.Title>
+                <Card.Text className="h2">
+                  {data.filter((user) => user.status === false).length}
+                </Card.Text>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+
+        <Col md={3}>
+          <Card>
+            <Card.Body className="d-flex align-items-center">
+              <div className="me-3">
+                <i
+                  className="bi bi-x-circle-fill"
+                  style={{ fontSize: '2rem', color: 'red' }}
+                ></i>
+              </div>
+              <div>
+                <Card.Title>Un Approved Customers</Card.Title>
                 <Card.Text className="h2">
                   {data.filter((user) => user.approveStatus === false).length}
                 </Card.Text>
@@ -153,6 +178,7 @@ const AccountsActivate = () => {
         <Tab eventKey="All" title="All" />
         <Tab eventKey="Active" title="Active" />
         <Tab eventKey="Deactivate" title="Deactivate" />
+        <Tab eventKey="UnApproved" title="Un Approved" />
       </Tabs>
 
       {/* ------------------------------------------datatable---------------------------------------- */}
@@ -163,7 +189,8 @@ const AccountsActivate = () => {
             <th>User</th>
             <th>Email</th>
             <th>Role</th>
-            <th>Status</th>
+            <th>Account Status</th>
+            <th>Approve Status</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -175,14 +202,24 @@ const AccountsActivate = () => {
               <td>{user.email}</td>
               <td>Customer</td>
               <td>
+                <Badge bg={getStatusBadge(user.status)}>
+                  {user.status ? 'Active' : 'Deactivate'}
+                </Badge>
+              </td>
+              <td>
                 <Badge bg={getStatusBadge(user.approveStatus)}>
-                  {user.approveStatus ? 'Active' : 'Deactivate'}
+                  {user.approveStatus ? 'Approved' : 'Not '}
                 </Badge>
               </td>
               <td>
                 <Button
                   variant="primary"
-                  onClick={() => setSelectedUser(user)}
+                  onClick={() => {
+                    setSelectedUser(user)
+                    if (activeTab === 'UnApproved') {
+                      showConfirmationMessage(true)
+                    }
+                  }}
                   size="sm"
                   style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
                 >
@@ -224,16 +261,16 @@ const AccountsActivate = () => {
                 <Button
                   variant="success"
                   onClick={() => showConfirmationMessage(true)}
-                  // disable if already active-------------------------------------------------------------
-                  disabled={selectedUser.approveStatus === true}
+                  // disable if already deactivated-------------------------------------------------------------
+                  disabled={selectedUser.status === true}
                 >
                   Activate
                 </Button>
                 <Button
                   variant="danger"
                   onClick={() => showConfirmationMessage(false)}
-                  // disable if already deactivated----------------------------------------------------------------
-                  disabled={selectedUser.approveStatus === false}
+                  // disable if already active----------------------------------------------------------------
+                  disabled={selectedUser.status === false}
                 >
                   Deactivate
                 </Button>

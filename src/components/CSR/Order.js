@@ -138,7 +138,7 @@ const Order = () => {
                       ? 'secondary'
                       : order.status === 'Delivered'
                       ? 'success'
-                      : order.status === 'Canceled'
+                      : order.status === 'Cancelled'
                       ? 'danger'
                       : order.status === 'Partial_Delivered'
                       ? 'info'

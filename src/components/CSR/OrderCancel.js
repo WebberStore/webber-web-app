@@ -25,7 +25,7 @@ const OrderCancel = () => {
 
   useEffect(() => {
     // fetch cancel request orders from API----------------------------------------------------
-    fetch(`${API_URL}/api/order/cancel/requests`)
+    fetch(`${API_URL}/api/order/pending`)
       .then((response) => response.json())
       .then((data) => setOrders(data))
       .catch((error) => console.error('Error fetching orders:', error))
@@ -179,7 +179,7 @@ const OrderCancel = () => {
                       ? 'secondary'
                       : order.status === 'Delivered'
                       ? 'success'
-                      : order.status === 'Canceled'
+                      : order.status === 'Cancelled'
                       ? 'danger'
                       : 'info'
                   }
