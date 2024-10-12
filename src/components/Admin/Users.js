@@ -146,7 +146,11 @@ export default function Users() {
             />
           </div>
           <div className="d-flex justify-content-end mt-3">
-            <Button type="submit" className="btn btn-primary">
+            <Button
+              type="submit"
+              className="btn btn-primary"
+              style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
+            >
               Add New Vendor
             </Button>
           </div>
@@ -279,6 +283,7 @@ export default function Users() {
           <Button
             onClick={() => setIsModalOpen(true)}
             className="btn btn-success me-2"
+            style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
           >
             Add New Vendor
           </Button>

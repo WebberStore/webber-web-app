@@ -1,36 +1,49 @@
-
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 
+    'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-@layer base {
-  html {
-    font-family: 'Inter', sans-serif;
-    line-height: 1.3;
-  }
-  table {
-  }
-  th,
-  td {
-    @apply py-3 px-2.5 text-sm text-left border-y border-gray-200;
-  }
-  thead {
-    @apply bg-neutral-100;
-  }
-  th {
-    @apply font-semibold;
-  }
-  a {
-    @apply text-sky-500 hover:underline;
-  }
+html {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.3;
+}
+
+table {
+  /* Add any specific table styling here if necessary */
+}
+
+th, td {
+  padding-top: 1rem; /* Equivalent to py-3 */
+  padding-bottom: 1rem;
+  padding-left: 0.75rem; /* Equivalent to px-2.5 */
+  padding-right: 0.75rem;
+  font-size: 0.875rem; /* Equivalent to text-sm */
+  text-align: left; /* Equivalent to text-left */
+  border-top: 1px solid #dee2e6; /* Equivalent to border-y */
+  border-bottom: 1px solid #dee2e6;
+}
+
+thead {
+  background-color: #f8f9fa; /* Equivalent to bg-neutral-100 */
+}
+
+th {
+  font-weight: 600; /* Equivalent to font-semibold */
+}
+
+a {
+  color: #0d6efd; /* Equivalent to text-sky-500 */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline; /* Equivalent to hover:underline */
 }

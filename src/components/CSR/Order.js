@@ -7,31 +7,33 @@ const Order = () => {
   const [orders, setOrders] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
-  const [showConfirmModal, setShowConfirmModal] = useState(false) // For confirmation message
+  // confirmation message----------------------------------------------------------
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+
   const [searchTerm, setSearchTerm] = useState('')
 
+  // API end point--------------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
 
   useEffect(() => {
-    // Fetch orders from API
+    // retriew all orders-----------------------------------------
     fetch(`${API_URL}/api/order`)
       .then((response) => response.json())
       .then((data) => setOrders(data))
       .catch((error) => console.error('Error fetching orders:', error))
   }, [])
 
-  // Handle view button click
+  // handle view button click----------------------------------------------------------------
   const handleViewClick = (order) => {
     setSelectedOrder(order)
     setShowModal(true)
   }
 
-  // Handle search functionality
+  // filter orders based on search term----------------------------------------------------------------
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase())
   }
 
-  // Filter orders based on search term
   const filteredOrders = orders.filter(
     (order) =>
       order.customer.name.toLowerCase().includes(searchTerm) ||
@@ -41,6 +43,7 @@ const Order = () => {
         .includes(searchTerm)
   )
 
+  // PDF export functionality----------------------------------------------------------------
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.text('Order Report', 14, 16)
@@ -77,23 +80,21 @@ const Order = () => {
     doc.save('orders-report.pdf')
   }
 
-  // Handle order delivery action
+  //order delivery action----------------------------------------------------------------
   const handleOrderDelivered = () => {
-    // Show confirmation modal before marking the order as delivered
+    // show confirmation modal before marking the order as delivered----------------------------------------------------------------
     setShowConfirmModal(true)
   }
 
-  // Confirm order delivery
+  // confirm order delivery----------------------------------------------------------------
   const confirmOrderDelivered = () => {
-    // Code for updating order to delivered would go here
-    // alert('Order delivered successfully')
     setShowConfirmModal(false)
-    setShowModal(false) // Close the main modal
+    setShowModal(false)
   }
 
   return (
-    <div className="container mt-4 bg-gray-100 h-screen flex justify-center items-center">
-      <h4>Orders</h4>
+    <div className="container mt-2 bg-gray-100 h-screen flex justify-center items-center">
+      <h4>ORDERS</h4>
       <div className="d-flex justify-content-between">
         <input
           type="text"
@@ -163,7 +164,7 @@ const Order = () => {
         </tbody>
       </Table>
 
-      {/* Pagination (Assuming showing 10 per page) */}
+      {/* -----------------------------------------------pagination - showing 10 per page------------------------------------------------------------------- */}
       <Pagination className="justify-content-center">
         <Pagination.Prev />
         <Pagination.Item active>{1}</Pagination.Item>
@@ -171,7 +172,7 @@ const Order = () => {
         <Pagination.Next />
       </Pagination>
 
-      {/* Modal for viewing detailed order */}
+      {/* ---------------------------------------------modal for viewing detailed order----------------------------------------------------------- */}
       {selectedOrder && (
         <Modal
           show={showModal}
@@ -195,6 +196,7 @@ const Order = () => {
             </Modal.Title>
           </Modal.Header>
           <Modal.Body>
+            {/* ---------------------------------------data table--------------------------------------------------- */}
             <Table striped bordered hover>
               <thead>
                 <tr>
@@ -238,9 +240,10 @@ const Order = () => {
               Close
             </Button>
             <Button
-              variant="info"
+              variant="secondary"
               onClick={handleOrderDelivered}
               className="me-2"
+              style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
             >
               Order Delivered
             </Button>
@@ -248,7 +251,7 @@ const Order = () => {
         </Modal>
       )}
 
-      {/* Confirmation Modal for Order Delivered */}
+      {/* ----------------------------------------------confirmation modal for order delivered------------------------------------------------- */}
       <Modal
         show={showConfirmModal}
         onHide={() => setShowConfirmModal(false)}

@@ -1,16 +1,16 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
-import Sidebar from '../components/Admin/Sidebar' // Import the Sidebar
+import Sidebar from '../components/Admin/Sidebar'
 
 const Layout = () => {
   return (
     <div className="d-flex">
-      {/* Sidebar */}
+      {/* --------------------------------------sidebar------------------------------------------------------ */}
       <Sidebar />
 
-      {/* Main content */}
+      {/* -----------------------------------------main content--------------------------------------------------------- */}
       <div className="flex-grow-1 p-4" style={{ marginLeft: '240px' }}>
-        <Outlet /> {/* This is where child routes will be rendered */}
+        <Outlet />
       </div>
     </div>
   )

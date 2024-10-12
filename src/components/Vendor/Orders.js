@@ -14,30 +14,30 @@ import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
 const Orders = () => {
-  const [key, setKey] = useState('newOrders') // Tab state
-  const [showModal, setShowModal] = useState(false) // Modal state
-  const [selectedOrder, setSelectedOrder] = useState(null) // Store selected order
-  const [showConfirmModal, setShowConfirmModal] = useState(false) // Confirmation modal state
-  const [confirmationMessage, setConfirmationMessage] = useState('') // Confirmation message
-  const [searchTerm, setSearchTerm] = useState('') // Search functionality
-  const [currentPage, setCurrentPage] = useState(1) // Pagination state
-  const [orders, setOrders] = useState([]) // Store orders
-  const [newStatus, setNewStatus] = useState('') // Store selected status from dropdown
-  const [actionType, setActionType] = useState('') // Store action type (Dispatched, Delivered)
+  const [key, setKey] = useState('newOrders')
+  const [showModal, setShowModal] = useState(false)
+  const [selectedOrder, setSelectedOrder] = useState(null)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [confirmationMessage, setConfirmationMessage] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [orders, setOrders] = useState([])
+  const [newStatus, setNewStatus] = useState('')
+  const [actionType, setActionType] = useState('')
 
   const ordersPerPage = 10
   const API_URL = process.env.REACT_APP_API_URL
-  const vendorId = '66fabea22165a016474e7a6e'
+  const vendorId = localStorage.getItem('vendorid')
 
-  // Fetch orders from API
+  // retriew all orders from API----------------------------------------------------------
   useEffect(() => {
-    fetch(`${API_URL}/api/order/item/vendor/${vendorId}`) // Example URL
+    fetch(`${API_URL}/api/order/item/vendor/${vendorId}`)
       .then((response) => response.json())
       .then((data) => setOrders(data))
       .catch((error) => console.log(error))
   }, [])
 
-  // Filter orders based on tab and search term
+  // filter orders----------------------------------------------------------------
   const filteredOrders = orders
     .filter((order) => {
       if (key === 'newOrders' && order.status === 'Pending') return true
@@ -53,7 +53,7 @@ const Orders = () => {
       )
     })
 
-  // Pagination setup
+  // pagination setup----------------------------------------------------------------
   const indexOfLastOrder = currentPage * ordersPerPage
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage
   const currentOrders = filteredOrders.slice(
@@ -64,17 +64,17 @@ const Orders = () => {
 
   const handleViewOrder = (order) => {
     setSelectedOrder(order)
-    setShowModal(true) // Show modal when "View" is clicked
+    setShowModal(true)
 
-    // Set the status dropdown to the current order status or next possible status
+    // set the status dropdown to the next possible status--------------------------------------------------------
     if (order.status === 'Pending') {
-      setNewStatus('Dispatched') // Allow changing from Pending to Dispatched
+      setNewStatus('Dispatched') // allow changing from pending to dispatched----------------------------------------------------------------
     } else if (order.status === 'Dispatched') {
-      setNewStatus('Delivered') // Allow changing from Dispatched to Delivered
+      setNewStatus('Delivered') // allow changing from dispatched to delivered----------------------------------------------------------------
     }
   }
 
-  // Update the order status after confirmation
+  // update the order status after confirmation----------------------------------------------------------------
   const handleUpdateStatus = () => {
     fetch(
       `${API_URL}/api/order/item/status/${selectedOrder.id}?status=${newStatus}`,
@@ -88,13 +88,13 @@ const Orders = () => {
           o.id === selectedOrder.id ? { ...o, status: newStatus } : o
         )
         setOrders(updatedOrders)
-        setShowModal(false) // Close the main modal after update
-        setShowConfirmModal(false) // Close confirmation modal after update
+        setShowModal(false)
+        setShowConfirmModal(false)
       })
       .catch((error) => console.log(error))
   }
 
-  // Confirmation logic for status update
+  // confirmation logic for status update-------------------------------------------------
   const handleStatusChange = () => {
     if (newStatus === 'Dispatched') {
       setConfirmationMessage(
@@ -107,10 +107,10 @@ const Orders = () => {
       )
       setActionType('Delivered')
     }
-    setShowConfirmModal(true) // Show confirmation modal
+    setShowConfirmModal(true)
   }
 
-  // Download PDF function for main data table
+  // download PDF function for main data table----------------------------------------------------------------
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.text('Orders Report', 14, 10)
@@ -128,7 +128,7 @@ const Orders = () => {
     doc.save('orders_report.pdf')
   }
 
-  // Download PDF for the modal (Order details)
+  // download PDF for the modal - Order details--------------------------------
   const downloadOrderDetailsPDF = (order) => {
     const doc = new jsPDF()
     doc.text(`Order ID: ${order.orderId}`, 14, 10)
@@ -146,14 +146,13 @@ const Orders = () => {
     <div className="container mt-2">
       <h3>Orders</h3>
 
-      {/* Tabs for toggling between orders */}
+      {/* ----------------------------------------------------------tabs for toggling between orders------------------------------------------------------------------ */}
       <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
         <Tab eventKey="newOrders" title="New Orders" />
         <Tab eventKey="dispatchedOrders" title="Dispatched Orders" />
         <Tab eventKey="deliveredOrders" title="Delivered Orders" />
       </Tabs>
 
-      {/* Search and download functionality */}
       <InputGroup className="mb-3">
         <FormControl
           placeholder="Search orders..."
@@ -169,7 +168,7 @@ const Orders = () => {
         </Button>
       </InputGroup>
 
-      {/* Data Table */}
+      {/* ---------------------------------------------------------datatable-------------------------------------------------------------- */}
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -227,7 +226,7 @@ const Orders = () => {
         </tbody>
       </Table>
 
-      {/* Pagination */}
+      {/* ----------------------------------------------------------pagination------------------------------------------------------------- */}
       <Pagination>
         <Pagination.Prev
           onClick={() => setCurrentPage(currentPage - 1)}
@@ -248,7 +247,7 @@ const Orders = () => {
         />
       </Pagination>
 
-      {/* Modal for Order Details */}
+      {/* -------------------------------------------------------------------------modal for order details--------------------------------------------------------- */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Order Details</Modal.Title>
@@ -291,7 +290,7 @@ const Orders = () => {
                 Download Order PDF
               </Button>
 
-              {/* Status dropdown logic */}
+              {/* -----------------------------------------status dropdown logic--------------------------------------------- */}
               {key !== 'deliveredOrders' && (
                 <Form.Group className="mt-3">
                   <Form.Label>Status</Form.Label>
@@ -300,11 +299,11 @@ const Orders = () => {
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
                   >
-                    {/* In new orders tab, show Dispatched only */}
+                    {/* -------------------------------in new orders tab, show Dispatched only------------------------------- */}
                     {key === 'newOrders' && (
                       <option value="Dispatched">Dispatched</option>
                     )}
-                    {/* In dispatched orders tab, show Delivered only */}
+                    {/* -------------------------------------in dispatched orders tab, show Delivered only------------------------------- */}
                     {key === 'dispatchedOrders' && (
                       <option value="Delivered">Delivered</option>
                     )}
@@ -312,7 +311,7 @@ const Orders = () => {
                 </Form.Group>
               )}
 
-              {/* Show the update button only if not in delivered orders */}
+              {/* ----------------------------------show the update button only if not in delivered orders-------------------------------- */}
               {key !== 'deliveredOrders' && (
                 <Button
                   style={{
@@ -335,7 +334,7 @@ const Orders = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Confirmation Modal for status change */}
+      {/* ---------------------------------------------------------confirmation Modal for status change----------------------------------------- */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirm {actionType}</Modal.Title>

@@ -17,16 +17,18 @@ const AccountsActivate = () => {
   const [data, setData] = useState([])
   const [activeTab, setActiveTab] = useState('All')
   const [selectedUser, setSelectedUser] = useState(null)
-  const [confirmAction, setConfirmAction] = useState(null) // To store the action for confirmation
-  const [showConfirmation, setShowConfirmation] = useState(false) // Show confirmation inside modal
+  const [confirmAction, setConfirmAction] = useState(null)
+  const [showConfirmation, setShowConfirmation] = useState(false)
 
+  // api endpoints-------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
 
-  // Fetch users with the role of Customer from the API
+  // fetch users with the role of customer from the API-------------------------------------
   useEffect(() => {
     getUsers()
   }, [])
 
+  // retriew all cutomers----------------------------------------------------------
   const getUsers = async () => {
     try {
       const response = await axios.get(`${API_URL}/api/user`)
@@ -37,33 +39,35 @@ const AccountsActivate = () => {
     }
   }
 
-  // Handle the status change (approveStatus)
+  // handle the status change----------------------------------------------------------------
   const handleStatusChange = async () => {
     if (selectedUser) {
       const updatedUser = {
         ...selectedUser,
-        approveStatus: confirmAction, // Update the approveStatus based on the action
+        // update the approvestatus based on the--------------------------------
+        approveStatus: confirmAction,
       }
 
       try {
-        // Send the full updated user data as the request payload
+        // send the full updated user data as the request payload----------------------------------------------------------------
         await axios.put(`${API_URL}/api/user/${selectedUser.id}`, updatedUser)
 
-        // Refresh the data after updating the status
+        // refresh the data after updating the status---------------------------------
         getUsers()
         setShowConfirmation(false)
-        setSelectedUser(null) // Close modal after action
+        setSelectedUser(null)
       } catch (error) {
         console.error('Error updating user status:', error)
       }
     }
   }
 
+  // green for active, red for deactivated-------------------------------------------------------
   const getStatusBadge = (status) => {
-    return status ? 'success' : 'danger' // Green for Active, Red for Deactivated
+    return status ? 'success' : 'danger'
   }
 
-  // Filter users based on the selected tab
+  // filter users based on the selected tab--------------------------------------------------
   const filteredData = data.filter((user) => {
     if (activeTab === 'All') return true
     if (activeTab === 'Active') return user.approveStatus === true
@@ -71,15 +75,17 @@ const AccountsActivate = () => {
     return true
   })
 
-  // Function to show confirmation message before status change
+  // function to show confirmation message before status change-----------------------------------------
   const showConfirmationMessage = (approveStatus) => {
-    setConfirmAction(approveStatus) // Store the action (activate or deactivate)
-    setShowConfirmation(true) // Show the confirmation message in the modal
+    // store the action (activate or deactivate)-------------------------------------
+    setConfirmAction(approveStatus)
+    // show the confirmation message in the modal--------------------------------
+    setShowConfirmation(true)
   }
 
   return (
     <Container>
-      {/* Summary Cards */}
+      {/* -----------------------------------------------summary cards------------------------------------------------------- */}
       <Row className="mb-4">
         <Col md={4}>
           <Card>
@@ -137,7 +143,7 @@ const AccountsActivate = () => {
         </Col>
       </Row>
 
-      {/* Tabs for All, Active, and Deactivate */}
+      {/* -------------------------------------tabs for All, Active, and Deactivate------------------------------------ */}
       <Tabs
         id="controlled-tab-example"
         activeKey={activeTab}
@@ -149,7 +155,7 @@ const AccountsActivate = () => {
         <Tab eventKey="Deactivate" title="Deactivate" />
       </Tabs>
 
-      {/* Data Table */}
+      {/* ------------------------------------------datatable---------------------------------------- */}
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -164,7 +170,7 @@ const AccountsActivate = () => {
         <tbody>
           {filteredData.map((user, index) => (
             <tr key={user.id}>
-              <td>{index}</td> {/* Custom No starting from 0 */}
+              <td>{index}</td>
               <td>{user.name}</td>
               <td>{user.email}</td>
               <td>Customer</td>
@@ -174,7 +180,12 @@ const AccountsActivate = () => {
                 </Badge>
               </td>
               <td>
-                <Button variant="primary" onClick={() => setSelectedUser(user)}>
+                <Button
+                  variant="primary"
+                  onClick={() => setSelectedUser(user)}
+                  size="sm"
+                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
+                >
                   Action
                 </Button>
               </td>
@@ -183,7 +194,7 @@ const AccountsActivate = () => {
         </tbody>
       </Table>
 
-      {/* Modal */}
+      {/* ----------------------------------------------------modal---------------------------------------------------- */}
       {selectedUser && (
         <Modal show={true} onHide={() => setSelectedUser(null)}>
           <Modal.Header closeButton>
@@ -212,15 +223,17 @@ const AccountsActivate = () => {
               <div className="d-flex justify-content-around">
                 <Button
                   variant="success"
-                  onClick={() => showConfirmationMessage(true)} // Show confirmation for activation
-                  disabled={selectedUser.approveStatus === true} // Disable if already active
+                  onClick={() => showConfirmationMessage(true)}
+                  // disable if already active-------------------------------------------------------------
+                  disabled={selectedUser.approveStatus === true}
                 >
                   Activate
                 </Button>
                 <Button
                   variant="danger"
-                  onClick={() => showConfirmationMessage(false)} // Show confirmation for deactivation
-                  disabled={selectedUser.approveStatus === false} // Disable if already deactivated
+                  onClick={() => showConfirmationMessage(false)}
+                  // disable if already deactivated----------------------------------------------------------------
+                  disabled={selectedUser.approveStatus === false}
                 >
                   Deactivate
                 </Button>

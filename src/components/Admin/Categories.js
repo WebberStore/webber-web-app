@@ -324,7 +324,12 @@ export default function Categories() {
               </div>
 
               <div className="modal-footer">
-                <button type="submit" className="btn btn-primary">
+                <button
+                  type="submit"
+                  size="sm"
+                  className="btn btn-primary"
+                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
+                >
                   Add Category
                 </button>
 
@@ -381,7 +386,12 @@ export default function Categories() {
               </div>
 
               <div className="modal-footer">
-                <button type="submit" className="btn btn-primary">
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  size="sm"
+                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
+                >
                   Update Category
                 </button>
 
@@ -442,6 +452,7 @@ export default function Categories() {
           <button
             onClick={() => setIsFormModalOpen(true)}
             className="btn btn-success me-2"
+            style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
           >
             Add New Category
           </button>
@@ -487,10 +498,13 @@ export default function Categories() {
                 <button
                   onClick={() => handleViewClick(category)}
                   className="btn btn-primary"
+                  size="sm"
+                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
                 >
-                  View
+                  Action
                 </button>{' '}
                 <button
+                  size="sm"
                   onClick={() => handleUpdateClick(category)}
                   className="btn btn-warning"
                 >

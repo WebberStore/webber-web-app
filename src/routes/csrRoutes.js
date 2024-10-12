@@ -9,8 +9,6 @@ import Layout from '../pages/LayoutCSR'
 const csrRoutes = () => {
   return (
     <div>
-      {/* <Navbar name={'Sunil Perera'} /> */}
-
       <Routes>
         <Route path="/csr" element={<Layout />}>
           <Route path="/csr/accountsActivate" element={<AccountsActivate />} />

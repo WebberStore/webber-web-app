@@ -9,12 +9,16 @@ const UserProfile = () => {
     password: '',
     role: '',
   })
-  const [showConfirmModal, setShowConfirmModal] = useState(false) // State for the confirmation modal
-  const [loading, setLoading] = useState(true) // Loading state for fetching profile data
-  const API_URL = process.env.REACT_APP_API_URL
-  const userId = '66fabea22165a016474e7a6e'
+  // state for the confirmation modal----------------------------------------------------------------
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  // loading state for fetching profile data----------------------------------------------------------------
+  const [loading, setLoading] = useState(true)
 
-  // Fetch user profile data on component load
+  // api endpoints----------------------------------------------------------------
+  const API_URL = process.env.REACT_APP_API_URL
+  const userId = localStorage.getItem('vendorid')
+
+  // fetch user profile data on component load----------------------------------------------------------------
   useEffect(() => {
     fetch(`${API_URL}/api/user/${userId}`)
       .then((response) => response.json())
@@ -30,7 +34,7 @@ const UserProfile = () => {
       .catch((error) => console.error('Error fetching profile:', error))
   }, [API_URL, userId])
 
-  // Handle form input changes
+  // handle form input changes----------------------------------------------------------------
   const handleChange = (e) => {
     setProfile({
       ...profile,
@@ -38,15 +42,15 @@ const UserProfile = () => {
     })
   }
 
-  // Handle update confirmation
+  // handle update confirmation----------------------------------------------------------------
   const handleUpdate = () => {
-    setShowConfirmModal(true) // Show the confirmation modal
+    setShowConfirmModal(true)
   }
 
-  // Confirm update and send update request
+  // confirm update and send update request----------------------------------------------------------------
   const confirmUpdate = () => {
-    setShowConfirmModal(false) // Hide the confirmation modal
-    // Make PUT request to update user profile
+    setShowConfirmModal(false)
+    // update the user profile----------------------------------------------------------------
     fetch(`${API_URL}/api/user/${userId}`, {
       method: 'PUT',
       headers: {
@@ -137,7 +141,7 @@ const UserProfile = () => {
         </div>
       )}
 
-      {/* Confirmation Modal */}
+      {/* -------------------------------------------------------confirmation modal-------------------------------------------------------------- */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Confirm Update</Modal.Title>

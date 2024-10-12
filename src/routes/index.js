@@ -12,8 +12,6 @@ const IndexRoutes = () => {
       <VendorRoutes />
       <CSRRoutes />
       <LoginRoutes />
-
-      {/* <ErrorRoute /> */}
     </div>
   )
 }

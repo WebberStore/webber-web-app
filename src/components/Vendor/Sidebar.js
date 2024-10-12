@@ -1,8 +1,18 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { DASHBOARD_SIDEBAR_LINKS } from './navigation'
 const Sidebar = () => {
-  const { pathname } = useLocation() // Get the current route
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
+
+  // handle logout--------------------------------------------------
+  const handleLogout = () => {
+    // remove user id from localStorage-----------------------------------------
+    localStorage.removeItem('csrid')
+
+    // redirect to login page----------------------------------------------------
+    navigate('/login')
+  }
 
   return (
     <div
@@ -14,17 +24,18 @@ const Sidebar = () => {
         <span className="fs-5 text-white">OrbitArcX -</span> Vendor
       </div>
 
-      {/* Links */}
+      {/* ---------------------------------------links----------------------------------------- */}
       <div className="flex-grow-1 py-2 d-flex flex-column gap-1">
         {DASHBOARD_SIDEBAR_LINKS.map((item) => (
           <SidebarLink key={item.key} item={item} pathname={pathname} />
         ))}
       </div>
 
-      {/* Logout */}
+      {/* --------------------------------------------------logout------------------------------------------------ */}
       <div className="d-flex flex-column gap-1 pt-2 border-top border-secondary">
         <Link
           to="/login"
+          onClick={handleLogout}
           className="text-danger text-decoration-none d-flex align-items-center gap-2 px-3 py-2"
         >
           <i className="bi bi-box-arrow-right"></i>

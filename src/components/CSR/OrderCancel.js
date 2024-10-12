@@ -7,38 +7,43 @@ const OrderCancel = () => {
   const [orders, setOrders] = useState([])
   const [showModal, setShowModal] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
-  const [showConfirmModal, setShowConfirmModal] = useState(false) // For confirmation message
-  const [cancelReason, setCancelReason] = useState('') // For storing cancel reason
+  // confirmation message------------------------------------------------------------------
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  // storing cancel reason----------------------------------------------------------------
+  const [cancelReason, setCancelReason] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [alertMessage, setAlertMessage] = useState('') // For API response messages
-  const [alertVariant, setAlertVariant] = useState('info') // Alert type (success or danger)
-  const [showResponseModal, setShowResponseModal] = useState(false) // For showing API response
-  const [responseMessage, setResponseMessage] = useState('') // Store API response text
+  // API response messages----------------------------------------------------------------
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertVariant, setAlertVariant] = useState('info')
+  // API response----------------------------------------------------------------
+  const [showResponseModal, setShowResponseModal] = useState(false)
+  // API response text----------------------------------------------------------------
+  const [responseMessage, setResponseMessage] = useState('')
 
+  // api endpoint----------------------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
 
   useEffect(() => {
-    // Fetch cancel request orders from API
+    // fetch cancel request orders from API----------------------------------------------------
     fetch(`${API_URL}/api/order/cancel/requests`)
       .then((response) => response.json())
       .then((data) => setOrders(data))
       .catch((error) => console.error('Error fetching orders:', error))
   }, [])
 
-  // Handle view button click
   const handleViewClick = (order) => {
     setSelectedOrder(order)
     setShowModal(true)
-    setAlertMessage('') // Reset alert when opening a new modal
-    setCancelReason('') // Reset cancel reason when opening a new modal
+    // reset alert when opening a new modal----------------------------------------------------------------
+    setAlertMessage('')
+    // reset cancel reason when opening a new modal----------------------------------------------------------------
+    setCancelReason('')
   }
 
-  // Handle search functionality
+  // filter orders----------------------------------------------------------------
   const handleSearch = (e) => {
     setSearchTerm(e.target.value.toLowerCase())
   }
-
-  // Filter orders based on search term
   const filteredOrders = orders.filter(
     (order) =>
       order.customer.name.toLowerCase().includes(searchTerm) ||
@@ -48,6 +53,7 @@ const OrderCancel = () => {
         .includes(searchTerm)
   )
 
+  // pdf export fuction--------------------------------------------------------
   const downloadPDF = () => {
     const doc = new jsPDF()
     doc.text('Order Cancellation Report', 14, 16)
@@ -86,20 +92,19 @@ const OrderCancel = () => {
     doc.save('orders-cancellation-report.pdf')
   }
 
-  // Handle order cancel action
+  // handle order cancel action----------------------------------------------------------------
   const handleOrderCancel = () => {
     if (!cancelReason) {
       setAlertMessage('Please enter a reason for cancellation.')
       setAlertVariant('danger')
     } else {
-      // Show confirmation modal before canceling the order
+      // show confirmation modal before canceling the order---------------------------------------------------
       setShowConfirmModal(true)
     }
   }
 
-  // Confirm order cancellation
   const confirmOrderCancel = () => {
-    // Call the API to cancel the order with the entered reason
+    // call the API to cancel the order with the entered reason----------------------------------------------------------------
     const cancelApiUrl = `${API_URL}/api/order/cancel/${
       selectedOrder.id
     }?cancelReason=${encodeURIComponent(cancelReason)}`
@@ -107,24 +112,26 @@ const OrderCancel = () => {
     fetch(cancelApiUrl, {
       method: 'PUT',
     })
-      .then((response) => response.text()) // Use response.text() to capture API response
+      // capture API response----------------------------------------------------------------
+      .then((response) => response.text())
       .then((data) => {
-        setResponseMessage(data) // Store the API response
-        setAlertVariant('info') // Set the alert variant to info or success
-        setShowResponseModal(true) // Show response modal
-        setShowConfirmModal(false) // Hide confirmation modal
+        // store the API ----------------------------------------------------------------
+        setResponseMessage(data)
+        setAlertVariant('info')
+        setShowResponseModal(true)
+        setShowConfirmModal(false)
       })
       .catch((error) => {
         setResponseMessage('Error canceling the order.')
         setAlertVariant('danger')
-        setShowResponseModal(true) // Show response modal in case of error
-        setShowConfirmModal(false) // Hide confirmation modal
+        setShowResponseModal(true)
+        setShowConfirmModal(false)
       })
   }
 
   return (
     <div className="container mt-4 bg-gray-100 h-screen flex justify-center items-center">
-      <h4>Orders Cancellation Requests</h4>
+      <h4> ORDER CANCELLATION REQUESTS</h4>
       <div className="d-flex justify-content-between">
         <input
           type="text"
@@ -194,7 +201,7 @@ const OrderCancel = () => {
         </tbody>
       </Table>
 
-      {/* Pagination (Assuming showing 10 per page) */}
+      {/* ---------------------------------------------------pagination - showing 10 per page------------------------------------------- */}
       <Pagination className="justify-content-center">
         <Pagination.Prev />
         <Pagination.Item active>{1}</Pagination.Item>
@@ -202,7 +209,7 @@ const OrderCancel = () => {
         <Pagination.Next />
       </Pagination>
 
-      {/* Modal for viewing detailed order */}
+      {/* -----------------------------------------modal for viewing detailed order--------------------------------------------------------+ */}
       {selectedOrder && (
         <Modal
           show={showModal}

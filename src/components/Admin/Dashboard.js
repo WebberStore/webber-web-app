@@ -16,7 +16,8 @@ const Dashboard = () => {
   const [selectedNotification, setSelectedNotification] = useState(null)
 
   // API enpoints---------------------------------------------------------------------
-  const API_URL = 'http://localhost:5034'
+  const API_URL = process.env.REACT_APP_API_URL
+
   const adminId = localStorage.getItem('adminid')
 
   // retriew all orders data----------------------------------------------------------------

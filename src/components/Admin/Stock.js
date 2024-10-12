@@ -26,6 +26,7 @@ const Stock = () => {
   const [newProduct, setNewProduct] = useState({
     name: '',
     description: '',
+    author: '',
     price: '',
     stock: '',
     categoryId: '',
@@ -116,6 +117,7 @@ const Stock = () => {
     const formData = new FormData()
     formData.append('name', newProduct.name)
     formData.append('description', newProduct.description)
+    formData.append('author', newProduct.author)
     formData.append('price', newProduct.price)
     formData.append('stock', newProduct.stock)
     formData.append('categoryId', newProduct.categoryId)
@@ -145,6 +147,7 @@ const Stock = () => {
     const formData = new FormData()
     formData.append('name', selectedProduct.name)
     formData.append('description', selectedProduct.description)
+    formData.append('author', selectedProduct.author)
     formData.append('price', selectedProduct.price)
     formData.append('stock', selectedProduct.stock)
     formData.append('categoryId', selectedProduct.category.id)
@@ -208,12 +211,21 @@ const Stock = () => {
     const doc = new jsPDF()
     doc.autoTable({
       head: [
-        ['Product Name', 'Stock', 'Description', 'Price', 'Category', 'Vendor'],
+        [
+          'Product Name',
+          'Stock',
+          'Description',
+          'Author',
+          'Price',
+          'Category',
+          'Vendor',
+        ],
       ],
       body: data.map((product) => [
         product.name,
         product.stock,
         product.description,
+        product.author,
         `Rs.${product.price.toFixed(2)}`,
         product.category.name,
         product.vendor.name,
@@ -325,6 +337,7 @@ const Stock = () => {
           <button
             onClick={() => setShowAddProduct(true)}
             className="btn btn-success me-2"
+            style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
           >
             Add Product
           </button>
@@ -344,6 +357,7 @@ const Stock = () => {
               <th>Product Name</th>
               <th>Stock</th>
               <th>Description</th>
+              <th>Author</th>
               <th>Price</th>
               <th>Category Name</th>
               <th>Vendor Name</th>
@@ -366,6 +380,7 @@ const Stock = () => {
                 <td>{product.name}</td>
                 <td>{product.stock}</td>
                 <td>{product.description}</td>
+                <td>{product.author}</td>
                 <td>Rs.{product.price}.00</td>
                 <td>{product.category.name}</td>
                 <td>{product.vendor.name}</td>
@@ -382,6 +397,11 @@ const Stock = () => {
                   <button
                     className="btn btn-primary"
                     onClick={() => handleActionClick(product)}
+                    size="sm"
+                    style={{
+                      backgroundColor: '#6362b5',
+                      borderColor: '#6362b5',
+                    }}
                   >
                     Action
                   </button>
@@ -474,6 +494,18 @@ const Stock = () => {
                       name="description"
                       placeholder="Enter product description"
                       value={newProduct.description}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Author</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="author"
+                      placeholder="Enter Author"
+                      value={newProduct.author}
                       onChange={handleInputChange}
                       required
                     />
@@ -633,6 +665,17 @@ const Stock = () => {
                       className="form-control"
                       name="description"
                       value={selectedProduct.description}
+                      onChange={handleUpdateInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Author</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="author"
+                      value={selectedProduct.author}
                       onChange={handleUpdateInputChange}
                       required
                     />

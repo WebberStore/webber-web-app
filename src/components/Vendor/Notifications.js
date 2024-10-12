@@ -2,37 +2,38 @@ import React, { useState, useEffect } from 'react'
 import { Table, Button, Tabs, Tab, Modal } from 'react-bootstrap'
 
 const Notifications = () => {
-  const [key, setKey] = useState('unseen') // Tab state
-  const [notifications, setNotifications] = useState([]) // Store notifications
-  const [selectedNotification, setSelectedNotification] = useState(null) // Store selected notification for modal
-  const [showModal, setShowModal] = useState(false) // Modal state
-  const [currentTabNotifications, setCurrentTabNotifications] = useState([]) // Notifications filtered by tab
-  const [rating, setRating] = useState(null) // Store the user rating
+  const [key, setKey] = useState('unseen')
+  const [notifications, setNotifications] = useState([])
+  const [selectedNotification, setSelectedNotification] = useState(null)
+  const [showModal, setShowModal] = useState(false)
+  const [currentTabNotifications, setCurrentTabNotifications] = useState([])
+  const [rating, setRating] = useState(null)
 
+  // api endpoints----------------------------------------------------------------
   const API_URL = process.env.REACT_APP_API_URL
-  const vendorId = '66fabea22165a016474e7a6e'
+  const vendorId = localStorage.getItem('vendorid')
 
-  // Fetch all notifications (both seen and unseen) on component load
+  // fetch all notifications----------------------------------------------------------------
   useEffect(() => {
     fetch(`${API_URL}/api/notification/user/${vendorId}`)
       .then((response) => response.json())
       .then((data) => {
-        setNotifications(data) // Store all notifications
+        setNotifications(data)
       })
       .catch((error) => console.error('Error fetching notifications:', error))
   }, [])
 
-  // Fetch user rating when the component loads
+  // fetch user rating-------------------------------------------------
   useEffect(() => {
     fetch(`${API_URL}/api/user/${vendorId}`)
       .then((response) => response.json())
       .then((data) => {
-        setRating(data.rating) // Set the rating value
+        setRating(data.rating)
       })
       .catch((error) => console.error('Error fetching user rating:', error))
   }, [])
 
-  // Filter notifications based on the selected tab (unseen or seen)
+  // filter notifications based on the selected tab------------------------------------------------
   useEffect(() => {
     const filtered = notifications.filter(
       (notification) => notification.seenStatus === (key === 'seen')
@@ -40,12 +41,12 @@ const Notifications = () => {
     setCurrentTabNotifications(filtered)
   }, [key, notifications])
 
-  // Handle viewing the notification and updating its seen status if it is in the unseen tab
+  // handle viewing the notification and updating its seen status if it is in the unseen tab-------------------------------------
   const handleViewNotification = (notification) => {
     setSelectedNotification(notification)
     setShowModal(true)
 
-    // Only update the seen status if the notification is unseen
+    // only update the seen status if the notification is unseen--------------------------------
     if (!notification.seenStatus) {
       fetch(
         `${API_URL}/api/notification/seen/${notification.id}?seenStatus=true`,
@@ -66,8 +67,6 @@ const Notifications = () => {
     <div className="container mt-4">
       <div className="d-flex justify-content-between align-items-center">
         <h3>Notifications</h3>
-
-        {/* Display rating in a square box on the right */}
         {rating !== null && (
           <div className="rating-box">
             Rating - <strong>{rating}</strong>
@@ -75,13 +74,13 @@ const Notifications = () => {
         )}
       </div>
 
-      {/* Tabs for toggling between unseen and seen notifications */}
+      {/* ----------------------------------------------tabs for toggling between unseen and seen notifications---------------------------------------------- */}
       <Tabs activeKey={key} onSelect={(k) => setKey(k)} className="mb-3">
         <Tab eventKey="unseen" title="Unseen" />
         <Tab eventKey="seen" title="Seen" />
       </Tabs>
 
-      {/* Data Table for displaying notifications */}
+      {/* ------------------------------------------------------------data table for displaying ---------------------------------------------------------------- */}
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -99,7 +98,7 @@ const Notifications = () => {
               <td>{new Date(notification.createdAt).toLocaleDateString()}</td>
               <td>
                 <Button
-                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }} // Custom color
+                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
                   size="sm"
                   onClick={() => handleViewNotification(notification)}
                 >
@@ -111,7 +110,7 @@ const Notifications = () => {
         </tbody>
       </Table>
 
-      {/* Modal for displaying notification details */}
+      {/* -------------------------------------modal for displaying notification details-------------------------------------------------- */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton>
           <Modal.Title>Notification</Modal.Title>
@@ -137,7 +136,6 @@ const Notifications = () => {
         </Modal.Footer>
       </Modal>
 
-      {/* Custom CSS for rating box */}
       <style jsx>{`
         .rating-box {
           display: inline-block;

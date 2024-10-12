@@ -8,8 +8,6 @@ import Layout from '../pages/LayoutVendor'
 const vendorRoutes = () => {
   return (
     <div>
-      {/* <Navbar name={'Sunil Perera'} /> */}
-
       <Routes>
         <Route path="/vendor" element={<Layout />}>
           <Route path="/vendor/stock" element={<Stock />} />
