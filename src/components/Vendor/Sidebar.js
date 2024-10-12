@@ -11,7 +11,7 @@ const Sidebar = () => {
     localStorage.removeItem('csrid')
 
     // redirect to login page----------------------------------------------------
-    navigate('/login')
+    navigate('/')
   }
 
   return (
@@ -34,7 +34,7 @@ const Sidebar = () => {
       {/* --------------------------------------------------logout------------------------------------------------ */}
       <div className="d-flex flex-column gap-1 pt-2 border-top border-secondary">
         <Link
-          to="/login"
+          to="/"
           onClick={handleLogout}
           className="text-danger text-decoration-none d-flex align-items-center gap-2 px-3 py-2"
         >

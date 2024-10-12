@@ -116,16 +116,18 @@ const OrderCancel = () => {
       .then((response) => response.text())
       .then((data) => {
         // store the API ----------------------------------------------------------------
-        setResponseMessage(data)
+        setResponseMessage('Sucessfully canceled the order.')
         setAlertVariant('info')
         setShowResponseModal(true)
         setShowConfirmModal(false)
+        setShowModal(false)
       })
       .catch((error) => {
-        setResponseMessage('Error canceling the order.')
+        setResponseMessage(error)
         setAlertVariant('danger')
         setShowResponseModal(true)
         setShowConfirmModal(false)
+        setShowModal(false)
       })
   }
 

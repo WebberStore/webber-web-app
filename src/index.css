@@ -16,34 +16,31 @@ html {
   line-height: 1.3;
 }
 
-table {
-  /* Add any specific table styling here if necessary */
-}
 
 th, td {
-  padding-top: 1rem; /* Equivalent to py-3 */
+  padding-top: 1rem; 
   padding-bottom: 1rem;
-  padding-left: 0.75rem; /* Equivalent to px-2.5 */
+  padding-left: 0.75rem; 
   padding-right: 0.75rem;
-  font-size: 0.875rem; /* Equivalent to text-sm */
-  text-align: left; /* Equivalent to text-left */
-  border-top: 1px solid #dee2e6; /* Equivalent to border-y */
+  font-size: 0.875rem; 
+  text-align: left; 
+  border-top: 1px solid #dee2e6; 
   border-bottom: 1px solid #dee2e6;
 }
 
 thead {
-  background-color: #f8f9fa; /* Equivalent to bg-neutral-100 */
+  background-color: #f8f9fa; 
 }
 
 th {
-  font-weight: 600; /* Equivalent to font-semibold */
+  font-weight: 600; 
 }
 
 a {
-  color: #0d6efd; /* Equivalent to text-sky-500 */
+  color: #0d6efd; 
   text-decoration: none;
 }
 
 a:hover {
-  text-decoration: underline; /* Equivalent to hover:underline */
+  text-decoration: underline; 
 }

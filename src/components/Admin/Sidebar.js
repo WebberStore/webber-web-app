@@ -12,7 +12,7 @@ const Sidebar = () => {
     localStorage.removeItem('adminid')
 
     // redirect to login page----------------------------------------------------
-    navigate('/login')
+    navigate('/')
   }
 
   return (

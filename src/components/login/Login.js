@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import loginImg from '../../assets/login.jpg'
+import loginImg from '../../assets/login.png'
 import { useNavigate } from 'react-router-dom'
 
 export default function Login() {
@@ -67,7 +67,7 @@ export default function Login() {
       <div className="row w-100">
         {/* Left side with image */}
         <div className="col-md-6 d-none d-md-block p-0">
-          <img src={loginImg} alt="Login" className="img-fluid h-100 w-100" />
+          <img src={loginImg} alt="Login" className="img-fluid h-80 w-80" />
         </div>
 
         {/* Right side with login form */}

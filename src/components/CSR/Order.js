@@ -239,14 +239,17 @@ const Order = () => {
             <Button variant="secondary" onClick={() => setShowModal(false)}>
               Close
             </Button>
-            <Button
-              variant="secondary"
-              onClick={handleOrderDelivered}
-              className="me-2"
-              style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
-            >
-              Order Delivered
-            </Button>
+            {selectedOrder.status !== 'Delivered' &&
+              selectedOrder.status !== 'Cancelled' && (
+                <Button
+                  variant="secondary"
+                  onClick={handleOrderDelivered}
+                  className="me-2"
+                  style={{ backgroundColor: '#6362b5', borderColor: '#6362b5' }}
+                >
+                  Order Delivered
+                </Button>
+              )}
           </Modal.Footer>
         </Modal>
       )}

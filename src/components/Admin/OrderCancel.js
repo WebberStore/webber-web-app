@@ -107,7 +107,7 @@ const OrderCancel = () => {
 
   // confirm the order cancellation and call the API with the cancel reason------------------------------------------------
   const confirmOrderCancel = () => {
-    const cancelApiUrl = `${API_URL}/api/order/cancel/${
+    const cancelApiUrl = `${API_URL}/api/order/csr/cancel/${
       selectedOrder.id
     }?cancelReason=${encodeURIComponent(cancelReason)}`
 
@@ -117,15 +117,17 @@ const OrderCancel = () => {
       // capture the API response for user visibility-------------------------------------------
       .then((response) => response.text())
       .then((data) => {
-        setResponseMessage(data)
+        setResponseMessage('Sucessfully canceled the order.')
         setAlertVariant('info')
         setShowResponseModal(true)
+        setShowModal(false)
         setShowConfirmModal(false)
       })
       .catch((error) => {
-        setResponseMessage('Error canceling the order.')
+        setResponseMessage(error)
         setAlertVariant('danger')
         setShowResponseModal(true)
+        setShowModal(false)
         setShowConfirmModal(false)
       })
   }

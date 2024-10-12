@@ -664,12 +664,12 @@ const Stock = () => {
                   <div className="mb-3">
                     <label className="form-label">Stock</label>
                     <input
+                      readOnly
                       type="number"
                       className="form-control"
                       name="stock"
                       value={selectedProduct.stock}
                       onChange={handleUpdateInputChange}
-                      required
                     />
                   </div>
                   <div className="mb-3">
