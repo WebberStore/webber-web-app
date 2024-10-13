@@ -7,6 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 const Stock = () => {
   const [data, setData] = useState([])
   const [categories, setCategories] = useState([])
+  const [availableCategories, setAvailableCategories] = useState([])
   const [vendors, setVendors] = useState([])
   const [lowStockCount, setLowStockCount] = useState(0)
   const [totalStockValue, setTotalStockValue] = useState(0)
@@ -44,6 +45,7 @@ const Stock = () => {
     getProducts()
     getCategories()
     getVendors()
+    setAvailableCategories(categories.filter((category) => category.status))
   }, [])
 
   // retriew all products----------------------------------------------------------
@@ -102,7 +104,14 @@ const Stock = () => {
   // handle form input changes for updating products----------------------------------------------------------------
   const handleUpdateInputChange = (e) => {
     const { name, value } = e.target
-    setSelectedProduct((prev) => ({ ...prev, [name]: value }))
+    if (name === 'categoryId') {
+      setSelectedProduct((prev) => ({
+        ...prev,
+        category: { ...prev.category, id: value },
+      }))
+    } else {
+      setSelectedProduct((prev) => ({ ...prev, [name]: value }))
+    }
   }
 
   // handle image file selection----------------------------------------------------------------
@@ -174,6 +183,7 @@ const Stock = () => {
       setShowSuccessModal(true)
     } catch (error) {
       console.error('Error updating product:', error)
+      alert(error.response.data)
     }
   }
 
@@ -186,6 +196,7 @@ const Stock = () => {
       setShowConfirmation(false)
     } catch (error) {
       console.error('Error deleting product:', error)
+      alert(error.response.data)
     }
   }
 
@@ -711,8 +722,9 @@ const Stock = () => {
                       onChange={handleUpdateInputChange}
                       required
                     >
+                      {/* backhere */}
                       <option value="">Select Category</option>
-                      {categories.map((category) => (
+                      {availableCategories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
                         </option>
