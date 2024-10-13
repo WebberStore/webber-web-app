@@ -31,8 +31,6 @@ export default function Login() {
       )
 
       const { id, role } = response?.data
-      console.log(id) // Capture user id from response
-      console.log(role) // Capture user role
 
       // Store the user ID in local storage based on the role
       if (role === 'Vendor') {
@@ -63,79 +61,74 @@ export default function Login() {
   }
 
   return (
-    <div className="container-fluid vh-100 d-flex align-items-center justify-content-center rounded-lg">
-      <div className="row w-100">
-        {/* Left side with image */}
-        <div className="col-md-6 d-none d-md-block p-0">
-          <img src={loginImg} alt="Login" className="img-fluid h-80 w-80" />
+    <div className="container-fluid vh-100 d-flex flex-column">
+      <div className="row flex-grow-1 align-items-center justify-content-center">
+        {/* Centered Illustration */}
+        <div className="col-md-12 d-flex justify-content-center">
+          <img src={loginImg} alt="Login Illustration" className="img-fluid" style={{ maxHeight: '400px' }} />
         </div>
+      </div>
 
-        {/* Right side with login form */}
-        <div className="col-md-6 d-flex align-items-center justify-content-center rounded-lg">
-          <form
-            className="bg-dark p-5 rounded-lg"
-            onSubmit={handleSubmit}
-            style={{ maxWidth: '400px', width: '100%' }}
-          >
-            {errMsg && (
-              <p className="alert alert-danger text-center">{errMsg}</p>
-            )}
-            <h2 className="text-center text-white mb-4">SIGN IN</h2>
-            <h3 className="text-center text-white mb-4">
-              Welcome To Webber
-            </h3>
+      {/* Full-width form at the bottom */}
+      <div className="row mb-4">
+        <div className="col-md-12">
+          <form className="bg-re p-4 d-flex justify-content-center align-items-center" onSubmit={handleSubmit}>
+            <div style={{ maxWidth: '600px', width: '100%' }}>
+              {errMsg && (
+                <p className="alert alert-danger text-center">{errMsg}</p>
+              )}
 
-            {/* Email Input */}
-            <div className="form-group mb-3">
-              <label className="text-white">Email</label>
-              <input
-                type="email"
-                className="form-control bg-secondary text-white"
-                id="user"
-                autoComplete="off"
-                onChange={(e) => setUser(e.target.value)}
-                value={user}
-                required
-              />
-            </div>
-
-            {/* Password Input */}
-            <div className="form-group mb-3">
-              <label className="text-white">Password</label>
-              <input
-                type="password"
-                className="form-control bg-secondary text-white"
-                id="password"
-                onChange={(e) => setPwd(e.target.value)}
-                value={pwd}
-                required
-              />
-            </div>
-
-            {/* Remember Me and Forgot Password */}
-            <div className="d-flex justify-content-between mb-3">
-              <div className="form-check">
+              {/* Email Input */}
+              <div className="form-group mb-3">
                 <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="rememberMe"
+                  type="email"
+                  className="form-control"
+                  id="user"
+                  placeholder="Email"
+                  autoComplete="email"
+                  onChange={(e) => setUser(e.target.value)}
+                  value={user}
+                  required
+                  style={{ borderRadius: '10px', padding: '10px' }}
                 />
-                <label
-                  className="form-check-label text-white"
-                  htmlFor="rememberMe"
-                >
-                  Remember Me
-                </label>
               </div>
-              <a href="#" className="text-white">
-                Forgot Password?
-              </a>
-            </div>
 
-            {/* Sign In Button */}
-            <button type="submit" className="btn btn-success w-100 py-2">
-              SIGN IN
-            </button>
+              {/* Password Input */}
+              <div className="form-group mb-3">
+                <input
+                  type="password"
+                  className="form-control"
+                  id="password"
+                  placeholder="Password"
+                  onChange={(e) => setPwd(e.target.value)}
+                  value={pwd}
+                  required
+                  style={{ borderRadius: '10px', padding: '10px' }}
+                />
+              </div>
+
+              {/* Remember Me and Forgot Password */}
+              <div className="d-flex justify-content-between mb-3">
+                <div className="form-check">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    id="rememberMe"
+                  />
+                  <label className="form-check-label" htmlFor="rememberMe">
+                    Remember Me
+                  </label>
+                </div>
+                <a href="#" className="text-muted">
+                  Forgot Password?
+                </a>
+              </div>
+
+              {/* Sign In Button */}
+              <button type="submit" className="btn btn-dark w-100 py-2" style={{ borderRadius: '10px' }}>
+                Login
+              </button>
+            </div>
           </form>
         </div>
       </div>
